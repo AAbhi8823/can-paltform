@@ -34,6 +34,19 @@ const userSchema = new Schema({
     enum: ["Veteran", "Caregiver", "Fighter"],
     required: false,
   },
+  pin:{ 
+    type: String, 
+    required: false
+  },
+  user_profile_image: { type: String, required: false },
+  // user_profile_image_url: { type: String, required: false },
+  // user_profile_name: { type: String, required: false },
+
+  // user_role: {
+  //   type: String,
+  //   enum: ["Admin", "User"],
+  //   required: false,
+  // },
 });
 
 module.exports = mongoose.model("User", userSchema);

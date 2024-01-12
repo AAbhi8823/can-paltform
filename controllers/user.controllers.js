@@ -88,8 +88,8 @@ exports.add_user = [
         date_Of_Birth,
         agreed_To_Terms,
         otp,
-        password,
-        confirm_password,
+        // password,
+        // confirm_password,
         user_profile,
       } = req.body;
 
@@ -150,47 +150,56 @@ exports.add_user = [
             },
           ],
         });
-        if (user_found) {
-          return res
-            .status(400)
-            .json({ status: false, msg: "User already exists" });
-        }
-        //Password and confirm_password validation
-        if (password !== confirm_password) {
-          return res.status(400).json({
-            status: false,
-            msg: "Password and confirm password does not match",
+        console.log("line 153", user_found);
+        //if user  not found then create the user
+        if (user_found == null) {
+          const verification_otp = await sendMobile_OTP(phone_number);
+
+          const new_user = new user_model({
+            full_name,
+            phone_number,
+            email,
+            gender,
+            date_Of_Birth,
+            agreed_To_Terms,
+            otp: verification_otp,
+            //  password: hashed_password,
+            user_profile,
+          });
+
+          // Save user
+          const user_created = await new_user.save();
+          user_created.password = undefined;
+
+          return res.status(200).json({
+            status: true,
+            message: `Successfully,verification OTP sent on mobile number: ${phone_number}.`,
+            //data: user_created,
           });
         }
+
+        if (user_found.isOTPVerified == false) {
+          return res.status(400).json({
+            status: false,
+            msg: "You are all ready registerd verify yourself to continue",
+          });
+        }
+
+        //Password and confirm_password validation
+        // if (password !== confirm_password) {
+        //   return res.status(400).json({
+        //     status: false,
+        //     msg: "Password and confirm password does not match",
+        //   });
+        // }
         //Password hashing
         // const salt = await bcrypt.genSalt(10);
         // const hashed_password = await bcrypt.hash(password, salt);
         // send otp on mobile and save in db as will
-        const verification_otp = await sendMobile_OTP(phone_number);
 
         // Create a new user
-        const new_user = new user_model({
-          full_name,
-          phone_number,
-          email,
-          gender,
-          date_Of_Birth,
-          agreed_To_Terms,
-          otp: verification_otp,
-          //  password: hashed_password,
-          user_profile,
-        });
-
-        // Save user
-        const user_created = await new_user.save();
-        user_created.password = undefined;
 
         // Send the response
-        return res.status(200).json({
-          status: true,
-          message: `Successfully,verification OTP sent on mobile number: ${phone_number}.`,
-          //data: user_created,
-        });
       } else if (otp) {
         const user_found = await user_model.findOne({
           $or: [
@@ -202,13 +211,61 @@ exports.add_user = [
             },
           ],
         });
-        if (!user_found) {
-          return res.status(400).json({ status: false, msg: "User not found" });
-        }
+        // if (!user_found) {
+        //   return res.status(400).json({ status: false, msg: "User not found" });
+        // }
         if (user_found.isOTPVerified) {
-          return res
-            .status(400)
-            .json({ status: false, msg: "OTP already verified" });
+          if (!user_found.password) {
+            //if user is verified but password is not there then proceed to create the password
+            if(!req.body.password){
+              return res.status(400).json({
+                status: false,
+                msg: "Please provide the password.",
+              });
+            }
+            if(!req.body.confirm_password){
+              return res.status(400).json({
+                status: false,
+                msg: "Please provide the confirm password.",
+              });
+
+            } 
+            if (req.body.password != req.body.confirm_password) {
+              return res
+                .status(400)
+                .json({
+                  status: false,
+                  msg: "Password and confirm password does not match",
+                });
+            }
+            //Password hashing
+            const salt = await bcrypt.genSalt(10);
+            const hashed_password = await bcrypt.hash(req.body.password, salt);
+            // update password
+            user_found.password = hashed_password;
+            const user_updated_password = await user_found.save();
+            user_updated_password.password = undefined;
+            // send token
+            return res.status(200).json(
+              {
+                status: true,
+                message: "Successfully,Password created.",
+                //  data: user_updated,
+              }
+            )
+
+
+           
+            // return res
+            //   .status(400)
+            //   .json({
+            //     status: false,
+            //     msg: "Please create password to complete account setup.",
+            //   });
+          }
+          // return res
+          //   .status(400)
+          //   .json({ status: false, message: "Successfully, account verified create password to proceed" });
         }
         if (user_found.otp !== otp) {
           return res.status(400).json({ status: false, msg: "Invalid OTP" });
@@ -224,49 +281,263 @@ exports.add_user = [
         const user_updated = await user_found.save();
         // user_updated.password = undefined;
 
-        if (
-          password &&
-          confirm_password &&
-          user_updated.isOTPVerified == true
-        ) {
-          //if (user_updated.isOTPVerified) {
-            if (password != confirm_password) {
-              return res
-                .status(400)
-                .json({
-                  status: false,
-                  msg: "Password and confirm password does not match",
-                });
-            }
-            if (!user_updated.password) {
-              return res
-                .status(400)
-                .json({
-                  status: false,
-                  msg: "Please create password to complete account setup.",
-                });
-            }
-            //Password hashing
-            const salt = await bcrypt.genSalt(10);
-            const hashed_password = await bcrypt.hash(password, salt);
-            // update password
-            user_updated.password = hashed_password;
-            const user_updated_password = await user_updated.save();
-            user_updated_password.password = undefined;
-            // send token
+        // if (
+        //   password &&
+        //   confirm_password &&
+        //   user_updated.isOTPVerified == true
+        // ) {
+        //   //if (user_updated.isOTPVerified) {
+        //     if (password != confirm_password) {
+        //       return res
+        //         .status(400)
+        //         .json({
+        //           status: false,
+        //           msg: "Password and confirm password does not match",
+        //         });
+        //     }
+        //     if (!user_updated.password) {
+        //       return res
+        //         .status(400)
+        //         .json({
+        //           status: false,
+        //           msg: "Please create password to complete account setup.",
+        //         });
+        //    }
+        //Password hashing
+        // const salt = await bcrypt.genSalt(10);
+        // const hashed_password = await bcrypt.hash(password, salt);
+        // // update password
+        // user_updated.password = hashed_password;
+        // const user_updated_password = await user_updated.save();
+        // user_updated_password.password = undefined;
+        // // send token
         //  }
-  
-          // Send the response
-          return res.status(200).json({
-            status: true,
-            message: "Successfully, account created.",
-            //  data: user_updated,
-          });
-        }
 
-        // if otp verified true the procced to create password for account setup process
-      } 
+        // Send the response
+        return res.status(200).json({
+          status: true,
+          message: "Successfully, account verified create password to proceed.",
+          //  data: user_updated,
+        });
+      }
+
+      // if otp verified true the procced to create password for account setup process
+
       // if otp is not empty
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Create password for user account API
+ * After otp verification user will be redirect o cfeate password
+ * create password page will have form to take two paramenters one password  and second is
+ * confirm_password and it will be inserted int already verified user
+ */
+
+exports.create_password = [
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { phone_number, password, confirm_password } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findOne({
+        phone_number: phone_number,
+      });
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Check if user is already verified
+      if (user_found.isOTPVerified) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User already verified"
+        );
+      }
+
+      // Check if password is correct
+      if (password !== confirm_password) {
+        return res.status(400).json({
+          status: false,
+          msg: "Password and confirm password does not match",
+        });
+      }
+
+      //Password hashing
+      const salt = await bcrypt.genSalt(10);
+      const hashed_password = await bcrypt.hash(password, salt);
+
+      // If otp is correct
+      user_found.isOTPVerified = true;
+      user_found.otp = undefined;
+      user_found.otpExpiary = undefined;
+      user_found.password = hashed_password;
+      const user_updated = await user_found.save();
+
+      // Send the response
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully verified",
+        user_updated
+      );
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Verify user using mobile otp
+ */
+exports.verify_user = [
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { phone_number, otp } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findOne({
+        phone_number: phone_number,
+      });
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Check if user is already verified
+      if (user_found.isOTPVerified) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User already verified"
+        );
+      }
+
+      // Check if otp is correct
+      if (user_found.otp !== otp) {
+        return apiResponse.validationErrorWithData(res, "Invalid OTP");
+      }
+
+      // Check if otp is expired
+      if (user_found.otpExpiary > Date.now()) {
+        return apiResponse.validationErrorWithData(res, "OTP expired");
+      }
+
+      // If otp is correct
+      user_found.isOTPVerified = true;
+      user_found.otp = undefined;
+      user_found.otpExpiary = undefined;
+      const user_updated = await user_found.save();
+
+      // Send the response
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully verified",
+        user_updated
+      );
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Login user
+ *
+ */
+exports.login_user = [
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { phone_number, password } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findOne({
+        phone_number: phone_number,
+      });
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Check if user is verified
+      if (!user_found.isOTPVerified) {
+        return apiResponse.validationErrorWithData(res, "User not verified");
+      }
+
+      // Check if password is correct
+      const validatePassword = await bcrypt.compare(
+        password,
+        user_found.password
+      );
+      if (!validatePassword) {
+        return apiResponse.validationErrorWithData(res, "Incorrect password");
+      }
+      const payload = {
+        user: {
+          _id: user_found._id.toString(),
+          CANID: user_found.CANID,
+        },
+      };
+      // Create and assign token
+      const token = jwt.sign(payload, process.env.TOKEN_SECRET, {
+        expiresIn: "1d",
+      });
+
+      // Send the response
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully logged in",
+        token
+      );
     } catch (err) {
       console.log(err);
       // Handle the error and send an appropriate response
@@ -337,5 +608,3 @@ exports.add_user_profile = [
     }
   },
 ];
-
-
