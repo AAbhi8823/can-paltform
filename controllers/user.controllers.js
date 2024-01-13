@@ -87,7 +87,7 @@ exports.add_user = [
         phone_number,
         email,
         gender,
-        date_Of_Birth,
+        date_of_birth,
         agreed_To_Terms,
         otp,
         // password,
@@ -118,7 +118,7 @@ exports.add_user = [
             .status(400)
             .json({ status: false, message: " Gender is required" });
         }
-        if (!date_Of_Birth) {
+        if (!date_of_birth) {
           return res
             .status(400)
             .json({ status: false, message: " Date of birth is required" });
@@ -162,7 +162,7 @@ exports.add_user = [
             phone_number,
             email,
             gender,
-            date_Of_Birth,
+            date_of_birth,
             agreed_To_Terms,
             otp: verification_otp,
             //  password: hashed_password,
