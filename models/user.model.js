@@ -10,7 +10,7 @@ const userSchema = new Schema({
   email: { type: String, required: true },
   phone_number: { type: String, required: true },
   gender: { type: String, required: true },
-  date_Of_Birth: { type: Date, required: true },
+  date_of_birth: { type: Date, required: true },
   agreed_To_Terms: { type: Boolean, required: true, default: false },
   otp: { type: String, required: false },
   // otpExpiary: {
@@ -26,20 +26,36 @@ const userSchema = new Schema({
   CANID: {
     type: String,
     default: () => `CAN${parseInt(Math.random() * 1000000)}`,
-    unique:true
+    unique: true,
   },
 
-  user_profile: {
-    type: String,
-    enum: ["Veteran", "Caregiver", "Fighter"],
-    required: false,
-  },
-  pin:{ 
-    type: String, 
-    required: false
-  },
-  user_profile_image: { type: String, required: false },
-  // user_profile_image_url: { type: String, required: false },
+  user_profile: [
+    {
+      profile_name: {
+        type: String,
+
+        required: false,
+      },
+      profile_role: {
+        type: String,
+        enum: ["Veteran", "Caregiver", "Fighter"],
+        required: false,
+      },
+      pin: {
+        type: String,
+        required: false,
+      },
+      profile_image: { type: String, required: false },
+      mobile: {
+        type: String,
+        required: false,
+      },
+      date_of_birth: {
+        type: String,
+        required: false,
+      },
+    },
+  ], // user_profile_image_url: { type: String, required: false },
   // user_profile_name: { type: String, required: false },
 
   // user_role: {

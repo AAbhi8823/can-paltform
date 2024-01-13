@@ -53,6 +53,8 @@ const { validationResult } = require("express-validator");
 const apiResponse = require("../response/apiResponse");
 const sendMobile_OTP = require("../helpers/helpers").sendOTP;
 const validator = require("../validators/validator");
+const login_validator=require("../middlewares/jwt.auth.middleware")
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
@@ -343,71 +345,71 @@ exports.add_user = [
  * confirm_password and it will be inserted int already verified user
  */
 
-exports.create_password = [
-  async (req, res) => {
-    try {
-      // Express validator
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-      // End Express validator
+// exports.create_password = [
+//   async (req, res) => {
+//     try {
+//       // Express validator
+//       const errors = validationResult(req);
+//       if (!errors.isEmpty()) {
+//         return res.status(400).json({ errors: errors.array() });
+//       }
+//       // End Express validator
 
-      // Destructuring request body
-      const { phone_number, password, confirm_password } = req.body;
+//       // Destructuring request body
+//       const { phone_number, password, confirm_password } = req.body;
 
-      // Check if user exists
-      const user_found = await user_model.findOne({
-        phone_number: phone_number,
-      });
-      if (!user_found) {
-        return apiResponse.notFoundResponse(res, "User not found");
-      }
+//       // Check if user exists
+//       const user_found = await user_model.findOne({
+//         phone_number: phone_number,
+//       });
+//       if (!user_found) {
+//         return apiResponse.notFoundResponse(res, "User not found");
+//       }
 
-      // Check if user is already verified
-      if (user_found.isOTPVerified) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "User already verified"
-        );
-      }
+//       // Check if user is already verified
+//       if (user_found.isOTPVerified) {
+//         return apiResponse.validationErrorWithData(
+//           res,
+//           "User already verified"
+//         );
+//       }
 
-      // Check if password is correct
-      if (password !== confirm_password) {
-        return res.status(400).json({
-          status: false,
-          msg: "Password and confirm password does not match",
-        });
-      }
+//       // Check if password is correct
+//       if (password !== confirm_password) {
+//         return res.status(400).json({
+//           status: false,
+//           msg: "Password and confirm password does not match",
+//         });
+//       }
 
-      //Password hashing
-      const salt = await bcrypt.genSalt(10);
-      const hashed_password = await bcrypt.hash(password, salt);
+//       //Password hashing
+//       const salt = await bcrypt.genSalt(10);
+//       const hashed_password = await bcrypt.hash(password, salt);
 
-      // If otp is correct
-      user_found.isOTPVerified = true;
-      user_found.otp = undefined;
-      user_found.otpExpiary = undefined;
-      user_found.password = hashed_password;
-      const user_updated = await user_found.save();
+//       // If otp is correct
+//       user_found.isOTPVerified = true;
+//       user_found.otp = undefined;
+//       user_found.otpExpiary = undefined;
+//       user_found.password = hashed_password;
+//       const user_updated = await user_found.save();
 
-      // Send the response
-      return apiResponse.successResponseWithData(
-        res,
-        "Successfully verified",
-        user_updated
-      );
-    } catch (err) {
-      console.log(err);
-      // Handle the error and send an appropriate response
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
-    }
-  },
-];
+//       // Send the response
+//       return apiResponse.successResponseWithData(
+//         res,
+//         "Successfully verified",
+//         user_updated
+//       );
+//     } catch (err) {
+//       console.log(err);
+//       // Handle the error and send an appropriate response
+//       return apiResponse.serverErrorResponse(
+//         res,
+//         "Server Error...!",
+//         err.message
+//       );
+//     }
+//   },
+// ];
 
 /**
  * Verify user using mobile otp
@@ -498,11 +500,18 @@ exports.login_user = [
       // End Express validator
 
       // Destructuring request body
-      const { phone_number, password } = req.body;
+      const { phone_number,email, password } = req.body;
 
       // Check if user exists
       const user_found = await user_model.findOne({
-        phone_number: phone_number,
+        $or: [
+          {
+            phone_number: phone_number,
+          },
+          {
+            email: email,
+          },
+        ],
       });
       if (!user_found) {
         return apiResponse.notFoundResponse(res, "User not found");
@@ -510,7 +519,7 @@ exports.login_user = [
 
       // Check if user is verified
       if (!user_found.isOTPVerified) {
-        return apiResponse.validationErrorWithData(res, "User not verified");
+        return apiResponse.validationErrorWithData(res, "Please verify yourself to continue.");
       }
 
       // Check if password is correct
@@ -525,10 +534,11 @@ exports.login_user = [
         user: {
           _id: user_found._id.toString(),
           CANID: user_found.CANID,
+          user_profile:user_found.user_profile
         },
       };
       // Create and assign token
-      const token = jwt.sign(payload, process.env.TOKEN_SECRET, {
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1d",
       });
 
@@ -557,6 +567,7 @@ exports.login_user = [
  */
 
 exports.add_user_profile = [
+  
   async (req, res) => {
     try {
       // Express validator
