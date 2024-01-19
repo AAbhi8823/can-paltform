@@ -9,7 +9,7 @@ const aws = require("../helpers/aws.s3");
 
 const apiResponse = require("../response/apiResponse");
 const { validationResult } = require("express-validator");
-
+const login_validator=require("../middlewares/jwt.auth.middleware").authentication
 const multer = require("multer");
 //multer storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -75,6 +75,43 @@ exports.add_health_record = [
         res,
         "Health record added successfully",
         health_record_saved
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+//===========================GET HEALTH RECORDS API===================================================//
+
+// Get Health records by user
+exports.get_health_records = [
+login_validator,
+  async (req, res) => {
+    try {
+      // Check if the user exists
+      const user_found = await user_model.findOne({
+        CANID: req.body.CANID,
+      });
+
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Get health records
+      const health_records = await healthrecords_model.find({
+        CANID: user_found.CANID,
+      });
+
+      // Return success response
+      return apiResponse.successResponseWithData(
+        res,
+        "Health records fetched successfully",
+        health_records
       );
     } catch (err) {
       return apiResponse.serverErrorResponse(
