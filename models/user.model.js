@@ -23,11 +23,11 @@ const userSchema = new Schema({
     default: false,
   },
   password: { type: String, required: false },
-  CANID: {
-    type: String,
-    default: () => `CAN${parseInt(Math.random() * 1000000)}`,
-    unique: true,
-  },
+  // CANID: {
+  //   type: String,
+  //   default: () => `CAN${parseInt(Math.random() * 1000000)}`,
+  //   unique: true,
+  // },
 
   user_profile: [
     {
@@ -35,6 +35,19 @@ const userSchema = new Schema({
         type: String,
 
         required: false,
+      },
+      profile_about: {
+        type: String,
+        required: false,
+      },
+      profile_description: {
+        type: String,
+        required: false,
+      },
+      CANID: {
+        type: String,
+        default: () => `CAN${parseInt(Math.random() * 1000000)}`,
+        unique: true,
       },
       profile_role: {
         type: String,
@@ -46,7 +59,7 @@ const userSchema = new Schema({
         required: false,
       },
       profile_image: { type: String, required: false },
-      mobile: {
+      phone_number: {
         type: String,
         required: false,
       },
@@ -54,15 +67,29 @@ const userSchema = new Schema({
         type: String,
         required: false,
       },
+      isBlocked:{
+        type:Boolean,
+        default:false
+      },
+      blockedBy:{
+        type:String,
+        required:false
+      },
+      status:{
+        type:String,
+        enum:["Active","Inactive"],
+        default:"Active"
+      },
+      
     },
   ], // user_profile_image_url: { type: String, required: false },
   // user_profile_name: { type: String, required: false },
 
-  // user_role: {
-  //   type: String,
-  //   enum: ["Admin", "User"],
-  //   required: false,
-  // },
-});
+  user_type: {
+    type: String,
+    enum: ["Admin", "User"],
+    required: false,
+  },
+}); 
 
 module.exports = mongoose.model("User", userSchema);

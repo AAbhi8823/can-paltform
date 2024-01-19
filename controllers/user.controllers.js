@@ -213,9 +213,9 @@ exports.add_user = [
             },
           ],
         });
-        // if (!user_found) {
-        //   return res.status(400).json({ status: false, msg: "User not found" });
-        // }
+        if (!user_found) {
+          return res.status(400).json({ status: false, msg: "User not found" });
+        }
         if (user_found.isOTPVerified) {
           if (!user_found.password) {
             //if user is verified but password is not there then proceed to create the password
@@ -251,7 +251,7 @@ exports.add_user = [
             return res.status(200).json(
               {
                 status: true,
-                message: "Successfully,Password created.",
+                message: "Successfully,Signup Completed. Create profile now!",
                 //  data: user_updated,
               }
             )
@@ -501,6 +501,7 @@ exports.login_user = [
 
       // Destructuring request body
       const { phone_number,email, password } = req.body;
+      console.log("line 504",phone_number,email, password)
 
       // Check if user exists
       const user_found = await user_model.findOne({
@@ -513,6 +514,7 @@ exports.login_user = [
           },
         ],
       });
+      console.log("line 516",user_found)
       if (!user_found) {
         return apiResponse.notFoundResponse(res, "User not found");
       }
@@ -530,11 +532,15 @@ exports.login_user = [
       if (!validatePassword) {
         return apiResponse.validationErrorWithData(res, "Incorrect password");
       }
+
+      console.log("line 536",user_found.user_profile
+      )
       const payload = {
         user: {
           _id: user_found._id.toString(),
           CANID: user_found.CANID,
-          user_profile:user_found.user_profile
+          phone_number:user_found.phone_number,
+          //user_profile:user_found.user_profile.user_role
         },
       };
       // Create and assign token
