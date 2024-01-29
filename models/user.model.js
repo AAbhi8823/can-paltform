@@ -67,6 +67,10 @@ const userSchema = new Schema({
         type: String,
         required: false,
       },
+      isSubscribed: {
+        type: Boolean,
+        default: false,
+      },
       isBlocked:{
         type:Boolean,
         default:false

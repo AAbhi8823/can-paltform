@@ -533,8 +533,7 @@ exports.login_user = [
         return apiResponse.validationErrorWithData(res, "Incorrect password");
       }
 
-      console.log("line 536",user_found.user_profile
-      )
+      //console.log("line 536",user_found.user_profile)
       const payload = {
         user: {
           _id: user_found._id.toString(),

@@ -67,6 +67,9 @@ exports.add_user_profile = [
       const user_found = await user_model.findOne({
         phone_number: req.body.phone_number,
       });
+      if(!user_found){
+        return apiResponse.validationErrorWithData(res, "Mobile Number is not registered with us");
+      }
 
       console.log("line 55", user_found);
 
@@ -140,11 +143,13 @@ exports.get_user_profile_list = [
   login_validator,
   async (req, res) => {
     try {
+      console.log("line 146", );
+
       // Check if the user exists
       const user_found = await user_model.findOne({
-        phone_number: req.user.phone_number,
+        phone_number: req.user.user.phone_number,
       });
-      console.log("line 142", user_found);
+      console.log("line 150", user_found);
 
       if (user_found.user_profile.length == 0) {
         return apiResponse.validationErrorWithData(
@@ -179,10 +184,11 @@ exports.user_profile_login = [
   async (req, res) => {
     try {
       // Check if the user exists
+      //console.log("line 1185", req.user.user.phone_number);
       const user_found = await user_model.findOne({
-        phone_number: req.user.phone_number,
+        phone_number: req.user.user.phone_number,
       });
-      console.log("line 142", user_found);
+      //console.log("line 189", user_found);
 
       if (user_found.user_profile.length == 0) {
         return apiResponse.validationErrorWithData(
@@ -194,7 +200,7 @@ exports.user_profile_login = [
       const user_profile_found = user_found.user_profile.find(
         (profile) => profile.pin == req.body.pin
       );
-      console.log("line 142", user_profile_found);
+      //console.log("line 201", user_profile_found);
 
       if (!user_profile_found) {
         return apiResponse.validationErrorWithData(
