@@ -44,7 +44,7 @@ exports.add_master_profile_list = [
 exports.get_master_profile_list = [
   async (req, res) => {
     try {
-      const master_profile_list = await master_profile_list_controller.find();
+      const master_profile_list = await master_profile_list_controller.findOne();
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
