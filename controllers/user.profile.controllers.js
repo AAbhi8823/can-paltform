@@ -224,3 +224,51 @@ exports.user_profile_login = [
     }
   },
 ];
+
+//user profile login usin 4 digit pin
+exports.user_profile_login_pin = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Check if the user exists
+      //console.log("line 1185", req.user.user.phone_number);
+      const user_found = await user_model.findOne({
+        phone_number: req.user.user.phone_number,
+      });
+      //console.log("line 189", user_found);
+
+      if (user_found.user_profile.length == 0) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User profile not found"
+        );
+      }
+      // Check if the user profile exists
+      const user_profile_found = user_found.user_profile.find(
+        (profile) => profile.pin == req.body.pin
+      );
+      //console.log("line 201", user_profile_found);
+
+      if (!user_profile_found) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User profile not found"
+        );
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User Loggedin Successfully.",
+        user_profile_found
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+

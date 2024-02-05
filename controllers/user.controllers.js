@@ -53,7 +53,7 @@ const { validationResult } = require("express-validator");
 const apiResponse = require("../response/apiResponse");
 const sendMobile_OTP = require("../helpers/helpers").sendOTP;
 const validator = require("../validators/validator");
-const login_validator=require("../middlewares/jwt.auth.middleware")
+const login_validator = require("../middlewares/jwt.auth.middleware");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -103,14 +103,10 @@ exports.add_user = [
             .json({ status: false, msg: "Full name is required" });
         }
         if (!phone_number) {
-          return res
-            .status(400)
-            .json({ status: false, msg: "Phone number is required" });
-        }
-        if (!email) {
-          return res
-            .status(400)
-            .json({ status: false, msg: "Email is required" });
+          return res.status(400).json({
+            status: false,
+            msg: "Phone is required for registration",
+          });
         }
 
         if (!gender) {
@@ -131,15 +127,18 @@ exports.add_user = [
         }
 
         // Validation of fields
-        if (!validator.validatePhoneNumber(phone_number)) {
+        if (
+          !validator.validatePhoneNumber(phone_number) &&
+          !validator.validateEmail(email)
+        ) {
           return apiResponse.validationErrorWithData(
             res,
-            "Invalid mobile number"
+            "Invalid email or mobile"
           );
         }
-        if (!validator.validateEmail(email)) {
-          return apiResponse.validationErrorWithData(res, "Invalid email");
-        }
+        // if (!validator.validateEmail(email)) {
+        //   return apiResponse.validationErrorWithData(res, "Invalid email");
+        // }
 
         // Check if user already exists
         const user_found = await user_model.findOne({
@@ -152,6 +151,11 @@ exports.add_user = [
             },
           ],
         });
+        if (user_found) {
+          return res
+            .status(400)
+            .json({ status: false, msg: "User already exists" });
+        }
         console.log("line 153", user_found);
         //if user  not found then create the user
         if (user_found == null) {
@@ -219,26 +223,23 @@ exports.add_user = [
         if (user_found.isOTPVerified) {
           if (!user_found.password) {
             //if user is verified but password is not there then proceed to create the password
-            if(!req.body.password){
+            if (!req.body.password) {
               return res.status(400).json({
                 status: false,
                 msg: "Please provide the password.",
               });
             }
-            if(!req.body.confirm_password){
+            if (!req.body.confirm_password) {
               return res.status(400).json({
                 status: false,
                 msg: "Please provide the confirm password.",
               });
-
-            } 
+            }
             if (req.body.password != req.body.confirm_password) {
-              return res
-                .status(400)
-                .json({
-                  status: false,
-                  msg: "Password and confirm password does not match",
-                });
+              return res.status(400).json({
+                status: false,
+                msg: "Password and confirm password does not match",
+              });
             }
             //Password hashing
             const salt = await bcrypt.genSalt(10);
@@ -248,16 +249,12 @@ exports.add_user = [
             const user_updated_password = await user_found.save();
             user_updated_password.password = undefined;
             // send token
-            return res.status(200).json(
-              {
-                status: true,
-                message: "Successfully,Signup Completed. Create profile now!",
-                //  data: user_updated,
-              }
-            )
+            return res.status(200).json({
+              status: true,
+              message: "Successfully,Signup Completed. Create profile now!",
+              //  data: user_updated,
+            });
 
-
-           
             // return res
             //   .status(400)
             //   .json({
@@ -500,8 +497,8 @@ exports.login_user = [
       // End Express validator
 
       // Destructuring request body
-      const { phone_number,email, password } = req.body;
-      console.log("line 504",phone_number,email, password)
+      const { phone_number, email, password } = req.body;
+      console.log("line 504", phone_number, email, password);
 
       // Check if user exists
       const user_found = await user_model.findOne({
@@ -514,14 +511,17 @@ exports.login_user = [
           },
         ],
       });
-      console.log("line 516",user_found)
+      console.log("line 516", user_found);
       if (!user_found) {
         return apiResponse.notFoundResponse(res, "User not found");
       }
 
       // Check if user is verified
       if (!user_found.isOTPVerified) {
-        return apiResponse.validationErrorWithData(res, "Please verify yourself to continue.");
+        return apiResponse.validationErrorWithData(
+          res,
+          "Please verify yourself to continue."
+        );
       }
 
       // Check if password is correct
@@ -538,7 +538,7 @@ exports.login_user = [
         user: {
           _id: user_found._id.toString(),
           CANID: user_found.CANID,
-          phone_number:user_found.phone_number,
+          phone_number: user_found.phone_number,
           //user_profile:user_found.user_profile.user_role
         },
       };
@@ -572,7 +572,6 @@ exports.login_user = [
  */
 
 exports.add_user_profile = [
-  
   async (req, res) => {
     try {
       // Express validator
