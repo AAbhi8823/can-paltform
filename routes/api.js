@@ -10,6 +10,8 @@ const medicineRoutes=require("./medicine.routes")
 const healthcardRoutes=require("./healthcard.routes")
 const subscriptionplanRoutes=require("./subscription.plan.routes")
 const profileListRoutes=require("./mster.profile.list.routes")
+const mystoryRoutes=require("./mystory.routes")
+const meetingRoutes=require("./zoom.live.meeting.management.routes")
 
 
 //Middlewares
@@ -20,7 +22,9 @@ app.use("/appointment",appointmentsRoutes)
 app.use("/medicine",medicineRoutes)
 app.use("/healthcard",healthcardRoutes)
 app.use("/subscriptionplan",subscriptionplanRoutes)
-app.use("/profilelist",profileListRoutes)
+app.use("/profilelist",profileListRoutes)   
+app.use("/mystory",mystoryRoutes)
+app.use("/meeting",meetingRoutes)
 
 
 

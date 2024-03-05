@@ -54,10 +54,13 @@ const apiResponse = require("../response/apiResponse");
 const sendMobile_OTP = require("../helpers/helpers").sendOTP;
 const validator = require("../validators/validator");
 const login_validator = require("../middlewares/jwt.auth.middleware");
+const otp_generator = require("../helpers/helpers").generateOTP;
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const config=require("../config/config")
 const dotenv = require("dotenv");
+const { generateOTP } = require("../helpers/helpers");
 dotenv.config();
 
 /**
@@ -94,7 +97,7 @@ exports.add_user = [
         // confirm_password,
         user_profile,
       } = req.body;
-
+      console.log("line 97", full_name, phone_number);
       // validation for empty body
       if (!otp) {
         if (!full_name) {
@@ -141,8 +144,9 @@ exports.add_user = [
         // }
 
         // Check if user already exists
+
         const user_found = await user_model.findOne({
-          $or: [
+          $and: [
             {
               phone_number: phone_number,
             },
@@ -151,15 +155,19 @@ exports.add_user = [
             },
           ],
         });
-        if (user_found) {
-          return res
-            .status(400)
-            .json({ status: false, msg: "User already exists" });
+        console.log("line 154", user_found);
+        if (user_found && user_found.isOTPVerified == false) {
+          return res.status(400).json({
+            status: false,
+            msg: "You are all ready registerd verify yourself to continue",
+          });
         }
         console.log("line 153", user_found);
         //if user  not found then create the user
         if (user_found == null) {
-          const verification_otp = await sendMobile_OTP(phone_number);
+          const verification_otp = await generateOTP(phone_number);
+          await sendMobile_OTP(phone_number, verification_otp);
+          console.log("line 161", verification_otp);
 
           const new_user = new user_model({
             full_name,
@@ -207,8 +215,9 @@ exports.add_user = [
 
         // Send the response
       } else if (otp) {
+        console.log("line 211", phone_number, email, otp);
         const user_found = await user_model.findOne({
-          $or: [
+          $and: [
             {
               phone_number: phone_number,
             },
@@ -217,6 +226,7 @@ exports.add_user = [
             },
           ],
         });
+        console.log("line 229", user_found);
         if (!user_found) {
           return res.status(400).json({ status: false, msg: "User not found" });
         }
@@ -248,7 +258,14 @@ exports.add_user = [
             user_found.password = hashed_password;
             const user_updated_password = await user_found.save();
             user_updated_password.password = undefined;
-            // send token
+        
+            //take root_user and save from body by default it is fighter
+            user_found.root_user = req.body.root_user;
+            // const  profile_image_url = await aws.single_file_upload(
+            //   req.file.buffer,
+            //   req.file.originalname
+            // );
+
             return res.status(200).json({
               status: true,
               message: "Successfully,Signup Completed. Create profile now!",
@@ -266,6 +283,9 @@ exports.add_user = [
           //   .status(400)
           //   .json({ status: false, message: "Successfully, account verified create password to proceed" });
         }
+        console.log("line 278", user_found);
+        console.log("line 279", user_found.otp, otp);
+
         if (user_found.otp !== otp) {
           return res.status(400).json({ status: false, msg: "Invalid OTP" });
         }
@@ -512,6 +532,8 @@ exports.login_user = [
         ],
       });
       console.log("line 516", user_found);
+      let can_ids = user_found.user_profile.map((ele) => ele.CANID);
+      console.log("line 516", can_ids);
       if (!user_found) {
         return apiResponse.notFoundResponse(res, "User not found");
       }
@@ -533,11 +555,13 @@ exports.login_user = [
         return apiResponse.validationErrorWithData(res, "Incorrect password");
       }
 
+      //console.log("line 536", user_found.user_profile[0].CANID);
       //console.log("line 536",user_found.user_profile)
       const payload = {
         user: {
           _id: user_found._id.toString(),
-          CANID: user_found.CANID,
+        
+          CANID: can_ids,
           phone_number: user_found.phone_number,
           //user_profile:user_found.user_profile.user_role
         },

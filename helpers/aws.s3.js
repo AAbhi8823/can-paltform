@@ -37,6 +37,66 @@ exports.single_file_upload = async (buffer, originalname) => {
   });
 };
 
+//FUNCTION TO UPLOAD MULTIPLE FILES TO AWS S3 BUCKET
+exports.multiple_file_upload = async (files) => {
+  return new Promise(function (resolve, reject) {
+    let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+    let uploadPromises = files.map((file) => {
+      return new Promise((resolve, reject) => {
+        var uploadParams = {
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: "canplatform/" + file.originalname,
+          Body: file.buffer,
+        };
+        s3.upload(uploadParams, function (err, data) {
+          if (err) {
+            console.log("Error", err);
+            return reject({ error: err.message });
+          }
+          return resolve(data.Location);
+        });
+      });
+    });
+
+    Promise.all(uploadPromises)
+      .then((results) => {
+        return resolve(results);
+      })
+      .catch((err) => {
+        return reject(err);
+      });
+  });
+};
+
+// //FUNCTION TO UPLOAD MULTIPLE FILES TO AWS S3 BUCKET
+// const multiple_file_upload = async (files) => {
+//   return new Promise(function (resolve, reject) {
+//     let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+//     let uploadPromises = files.map((file) => {
+//       const uploadParams = {
+//         ACL: "public-read",
+//         Bucket: process.env.AWS_BUCKET_NAME,
+//         Key: "Lastoli/" + file.originalname,
+//         Body: file.buffer,
+//       };
+//       return s3.upload(uploadParams).promise();
+//     });
+//     Promise.all(uploadPromises)
+//       .then((uploadResults) => {
+//         const fileUrls = uploadResults.map((result) => result.Location);
+//         return resolve(fileUrls);
+//       })
+//       .catch((err) => {
+//         return reject({ error: err.message });
+//       });
+//   });
+// };
+
+//module.exports = { single_file_upload, multiple_file_upload };
+
+
+
+
 
 // module.exports={
 //     single_file_upload

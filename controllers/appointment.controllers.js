@@ -177,7 +177,9 @@ exports.get_appointment_list = [
   login_validator,
   async (req, res) => {
     try {
-      const appointment = await appointment_controllers.find();
+      const appointment = await appointment_controllers.find({
+        user_id: req.user._id,
+      });
       return apiResponse.successResponseWithData(
         res,
         "Appointment list",

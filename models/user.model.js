@@ -7,8 +7,8 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   full_name: { type: String, required: true },
-  email: { type: String, required:false },
-  phone_number: { type: String, required:false },
+  email: { type: String, required: false },
+  phone_number: { type: String, required: false },
   gender: { type: String, required: true },
   date_of_birth: { type: Date, required: true },
   agreed_To_Terms: { type: Boolean, required: true, default: false },
@@ -28,6 +28,19 @@ const userSchema = new Schema({
   //   default: () => `CAN${parseInt(Math.random() * 1000000)}`,
   //   unique: true,
   // },
+  root_user: {
+    type: String,
+    required: false,
+    default: "Fighter",
+  },
+  pin: {
+    type: Number,
+    required: true,
+  },
+  isSubscribed: {
+    type: Boolean,
+    default: false,
+  },
 
   user_profile: [
     {
@@ -51,12 +64,12 @@ const userSchema = new Schema({
       },
       profile_role: {
         type: String,
-        enum: ["Veteran", "Caregiver", "Fighter"],
+        enum: ["Veteran", "Caregiver"],
         required: false,
       },
       pin: {
-        type: String,
-        required: false,
+        type: Number,
+        required: true,
       },
       profile_image: { type: String, required: false },
       phone_number: {
@@ -71,20 +84,19 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
       },
-      isBlocked:{
-        type:Boolean,
-        default:false
+      isBlocked: {
+        type: Boolean,
+        default: false,
       },
-      blockedBy:{
-        type:String,
-        required:false
+      blockedBy: {
+        type: String,
+        required: false,
       },
-      status:{
-        type:String,
-        enum:["Active","Inactive"],
-        default:"Active"
+      status: {
+        type: String,
+        enum: ["Active", "Inactive"],
+        default: "Active",
       },
-      
     },
   ], // user_profile_image_url: { type: String, required: false },
   // user_profile_name: { type: String, required: false },
@@ -94,6 +106,6 @@ const userSchema = new Schema({
     enum: ["Admin", "User"],
     required: false,
   },
-}); 
+});
 
 module.exports = mongoose.model("User", userSchema);
