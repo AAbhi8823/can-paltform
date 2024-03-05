@@ -78,7 +78,7 @@ exports.add_user_profile = [
 
         // Save the health record
         user_found.user_profile.unshift({
-          profile_name: user_found.full_name,
+          profile_name: req.body.full_name,
           profile_role: req.body.profile_role,
           pin: req.body.pin,
           profile_image: req.body.profile_image,
@@ -188,7 +188,12 @@ exports.user_profile_login = [
       const user_found = await user_model.findOne({
         phone_number: req.user.user.phone_number,
       });
-      //console.log("line 189", user_found);
+      console.log("line 189", user_found);
+      //get all canid
+      let can_ids=user_found.user_profile.map((ele)=>ele.CANID)
+      console.log("line 194",can_ids)
+      
+
 
       if (user_found.user_profile.length == 0) {
         return apiResponse.validationErrorWithData(
@@ -196,23 +201,28 @@ exports.user_profile_login = [
           "User profile not found"
         );
       }
+  //fetc the user's profiles list 
+  // const user_profile=await user_model.findOne({
+
+  // })
+
       // Check if the user profile exists
-      const user_profile_found = user_found.user_profile.find(
-        (profile) => profile.pin == req.body.pin
-      );
+      // const user_profile_found = user_found.user_profile.find(
+      //   (profile) => profile.pin == req.body.pin
+      // );
       //console.log("line 201", user_profile_found);
 
-      if (!user_profile_found) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "User profile not found"
-        );
-      }
+      // if (!user_profile_found) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "User profile not found"
+      //   );
+      // }
 
       return apiResponse.successResponseWithData(
         res,
         "User Loggedin Successfully.",
-        user_profile_found
+        user_found
       );
     } catch (err) {
       console.log("line 80", err);
