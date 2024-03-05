@@ -14,7 +14,7 @@ const profilePinAuthenticate = (req, res, next) => {
 
   jwt.verify(token, secret, (err, user) => {
     if (err) return apiResponse.unauthorizedResponse(res, "Unauthorized Token");
-    if (user.user.isAdmin !== true)
+    if (user.user.isAdmin == false)//user.user.isAdmin !== true
       return apiResponse.unauthorizedResponse(
         res,
         "You don't have admin privileges"

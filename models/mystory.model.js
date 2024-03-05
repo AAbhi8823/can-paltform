@@ -53,10 +53,10 @@ const mystorySchema = new Schema(
         required: false,
       },
     ],
-    CANID: {
+    CANID: [{
       type: String,
       required: false,
-    },
+    }],
 
     // story: {
     //     type: String,
