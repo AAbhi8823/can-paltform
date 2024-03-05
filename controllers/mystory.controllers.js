@@ -21,7 +21,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Create and Save a new Mystory
 exports.add_mystory = [
   login_validator,
-profilePin_validator,
+//profilePin_validator,
   upload.array("media_files", 10),
   async (req, res) => {
     try {
@@ -71,8 +71,9 @@ exports.get_mystory_list = [
   login_validator,
   async (req, res) => {
     try {
+      console.log("line 77",req.user.user._id)
       const mystory_list = await mystory_model.find({
-        user_id: req.user.user._id,
+       // user_id: req.user.user._id,
       });
       return apiResponse.successResponseWithData(
         res,
