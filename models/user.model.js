@@ -35,7 +35,7 @@ const userSchema = new Schema({
   },
   pin: {
     type: Number,
-    required: true,
+    required: false,
   },
   isSubscribed: {
     type: Boolean,
