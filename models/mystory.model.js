@@ -25,9 +25,16 @@ const mystorySchema = new Schema(
 
     likes: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: false,
+        _id: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: false,
+        },
+
+        CANID: {
+          type: String,
+          required: false,
+        },
       },
     ],
 
@@ -53,10 +60,12 @@ const mystorySchema = new Schema(
         required: false,
       },
     ],
-    CANID: [{
-      type: String,
-      required: false,
-    }],
+    CANID: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
 
     // story: {
     //     type: String,

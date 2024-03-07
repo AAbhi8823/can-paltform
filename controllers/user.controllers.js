@@ -53,7 +53,7 @@ const { validationResult } = require("express-validator");
 const apiResponse = require("../response/apiResponse");
 const sendMobile_OTP = require("../helpers/helpers").sendOTP;
 const validator = require("../validators/validator");
-const login_validator = require("../middlewares/jwt.auth.middleware");
+const login_validator = require("../middlewares/jwt.auth.middleware").authentication;
 const otp_generator = require("../helpers/helpers").generateOTP;
 
 const bcrypt = require("bcrypt");
@@ -168,6 +168,10 @@ exports.add_user = [
           const verification_otp = await generateOTP(phone_number);
           await sendMobile_OTP(phone_number, verification_otp);
           console.log("line 161", verification_otp);
+          //Password hashing
+          // const salt = await bcrypt.genSalt(10);
+          // const hashed_password = await bcrypt.hash(password, salt);
+
 
           const new_user = new user_model({
             full_name,
@@ -177,7 +181,7 @@ exports.add_user = [
             date_of_birth,
             agreed_To_Terms,
             otp: verification_otp,
-            //  password: hashed_password,
+            // password: hashed_password,
             user_profile,
           });
 
@@ -227,7 +231,8 @@ exports.add_user = [
           ],
         });
         console.log("line 229", user_found);
-        if (!user_found) {
+       
+          if (!user_found) {
           return res.status(400).json({ status: false, msg: "User not found" });
         }
         if (user_found.isOTPVerified) {
@@ -278,6 +283,9 @@ exports.add_user = [
             //     status: false,
             //     msg: "Please create password to complete account setup.",
             //   });
+          }
+          if(user_found.isOTPVerified && user_found.root_user==null){
+            return res.status(400).json({ status: false, msg: ` ${phone_number} is already registered.` })
           }
           // return res
           //   .status(400)
@@ -522,7 +530,7 @@ exports.login_user = [
 
       // Check if user exists
       const user_found = await user_model.findOne({
-        $or: [
+        $and: [
           {
             phone_number: phone_number,
           },
@@ -532,8 +540,8 @@ exports.login_user = [
         ],
       });
       console.log("line 516", user_found);
-      let can_ids = user_found.user_profile.map((ele) => ele.CANID);
-      console.log("line 516", can_ids);
+      //let can_ids = user_found.user_profile.map((ele) => ele.CANID);
+      //console.log("line 516", can_ids);
       if (!user_found) {
         return apiResponse.notFoundResponse(res, "User not found");
       }
@@ -547,10 +555,11 @@ exports.login_user = [
       }
 
       // Check if password is correct
-      const validatePassword = await bcrypt.compare(
+      const validatePassword =  await bcrypt.compare(
         password,
         user_found.password
       );
+      //console.log("line 554", validatePassword);
       if (!validatePassword) {
         return apiResponse.validationErrorWithData(res, "Incorrect password");
       }
@@ -563,7 +572,7 @@ exports.login_user = [
         
           CANID: can_ids,
           phone_number: user_found.phone_number,
-          //user_profile:user_found.user_profile.user_role
+          user_profile:user_found.user_profile.user_role
         },
       };
       // Create and assign token
@@ -588,6 +597,43 @@ exports.login_user = [
     }
   },
 ];
+
+
+//Get root user profile
+exports.get_root_user_profile = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Check if the user exists
+      const user_found = await user_model.findOne({
+        phone_number: req.user.user.phone_number,
+      }).select("-user_profile -password -otp -otpExpiary");
+      console.log("line 146", user_found);
+
+      if (!user_found ) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User profile not found"
+        );
+      }
+
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User profile",
+        user_found
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
 
 /**
  * Now Add Profile API
@@ -634,6 +680,99 @@ exports.add_user_profile = [
       return apiResponse.successResponseWithData(
         res,
         "Successfully added profile",
+        user_updated
+      );
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Reset password api
+ * This api will be used to reset the password in whcih user will enter the phone number or  email and get 
+ * OTP verification code and then user will enter the new password and confirm password
+ * 
+ */
+exports.reset_password = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { phone_number, email, otp, password, confirm_password } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findOne({
+        $and: [
+          {
+            phone_number: req.user.user.phone_number,
+          },
+          {
+            email: req.user.user.email,
+          },
+        ],
+      });
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+      //send otp to user and save in db
+      const verification_otp = await generateOTP(phone_number);
+      await sendMobile_OTP(phone_number, verification_otp);
+      user_found.otp = verification_otp;
+     //user_found.otpExpiary = Date.now() + 600000;
+      //const user_otp_saved = await user_found.save(); 
+      // Send the response
+      console.log("line 146", user_found);
+
+      // Check if otp is correct
+      if (user_found.otp !== otp) {
+        return apiResponse.validationErrorWithData(res, "Invalid OTP");
+      }
+
+      // Check if otp is expired
+      if (user_found.otpExpiary > Date.now()) {
+        return apiResponse.validationErrorWithData(res, "OTP expired");
+      }
+
+      // Check if password is correct
+      if (password !== confirm_password) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Password and confirm password does not match"
+        );
+      }
+
+      //Password hashing
+      const salt = await bcrypt.genSalt(10);
+      const hashed_password = await bcrypt.hash(password, salt);
+
+      // If otp is correct
+      user_found.otp = undefined;
+      //user_found.otpExpiary = undefined;
+      user_found.password = hashed_password;
+      const user_updated = await user_found.save();
+
+      // Send the response
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully reset password",
         user_updated
       );
     } catch (err) {

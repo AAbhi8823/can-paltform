@@ -13,15 +13,20 @@ const userSchema = new Schema({
   date_of_birth: { type: Date, required: true },
   agreed_To_Terms: { type: Boolean, required: true, default: false },
   otp: { type: String, required: false },
-  // otpExpiary: {
-  //   type: Date,
-  //   default: Date.now,
-  //   expires: 600,
-  // },
+  otpExpiary: {
+    type: Date,
+    default: Date.now,
+    expires: 600,
+  },
   isOTPVerified: {
     type: Boolean,
     default: false,
   },
+  CANID: {
+        type: String,
+        default: () => `CAN${parseInt(1000+Math.random() * 9000)}`,
+        unique: true,
+      },
   password: { type: String, required: false },
   // CANID: {
   //   type: String,
@@ -31,22 +36,27 @@ const userSchema = new Schema({
   root_user: {
     type: String,
     required: false,
-    default: "Fighter",
+    default: null,
   },
   pin: {
-    type: Number,
+    type: String,
     required: false,
   },
   isSubscribed: {
     type: Boolean,
     default: false,
   },
+  profile_image: { type: String, required: false },
 
   user_profile: [
     {
       profile_name: {
         type: String,
 
+        required: false,
+      },
+      chiled_user_type: {
+        type: String,
         required: false,
       },
       profile_about: {
@@ -59,7 +69,7 @@ const userSchema = new Schema({
       },
       CANID: {
         type: String,
-        default: () => `CAN${parseInt(Math.random() * 1000000)}`,
+        default: () => `CAN${parseInt(100000+Math.random() * 900000)}`,
         unique: true,
       },
       profile_role: {
@@ -68,7 +78,7 @@ const userSchema = new Schema({
         required: false,
       },
       pin: {
-        type: Number,
+        type: String,
         required: true,
       },
       profile_image: { type: String, required: false },
@@ -101,11 +111,11 @@ const userSchema = new Schema({
   ], // user_profile_image_url: { type: String, required: false },
   // user_profile_name: { type: String, required: false },
 
-  user_type: {
-    type: String,
-    enum: ["Admin", "User"],
-    required: false,
-  },
+  // user_type: {
+  //   type: String,
+  //   enum: ["Admin", "User"],
+  //   required: false,
+  // },
 });
 
 module.exports = mongoose.model("User", userSchema);

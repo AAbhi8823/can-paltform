@@ -6,9 +6,16 @@ const master_profile_list_controller = require("../models/master.profile.list.mo
 const user_controller = require("../models/user.model");
 const { validationResult } = require("express-validator");
 const apiResponse = require("../response/apiResponse");
+const aws = require("../helpers/aws.s3");
+const multer = require("multer");
+
+
+//multer storage
+const upload = multer({ storage: multer.memoryStorage() });
 
 //Add Master Profile List api
 exports.add_master_profile_list = [
+  upload.single("profile_image"),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -21,9 +28,20 @@ exports.add_master_profile_list = [
       }
 
       const { profiles } = req.body;
+      //upload profile images to s3
+      const profile_image_url = await aws.single_file_upload(
+        req.file.buffer,
+        req.file.originalname
+      );
       const master_Profile_List = new master_profile_list_controller({
-        profiles,
+      
+          role: req.body.role,
+          profile_description: req.body. profile_description,
+          profile_image: profile_image_url,
+        
+        
       });
+        
       const master_profile_list_saved = await master_Profile_List.save();
       return apiResponse.successResponseWithData(
         res,
@@ -44,7 +62,7 @@ exports.add_master_profile_list = [
 exports.get_master_profile_list = [
   async (req, res) => {
     try {
-      const master_profile_list = await master_profile_list_controller.findOne();
+      const master_profile_list = await master_profile_list_controller.find();
       return apiResponse.successResponseWithData(
         res,
         "Operation success",
