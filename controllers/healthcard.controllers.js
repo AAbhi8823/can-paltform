@@ -13,7 +13,6 @@ const apiResponse=require("../response/apiResponse")
 const dotenv = require("dotenv");
 dotenv.config();
 
-//const multer = require("multer");
 
 // const storage = multer.memoryStorage({
 //     destination: function (req, file, callback) {
