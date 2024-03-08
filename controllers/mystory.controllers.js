@@ -30,7 +30,7 @@ exports.add_mystory = [
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { user_id, post_title, post_description, media_files } = req.body;
+      const { user_id, post_title,  post_description, media_files } = req.body;
       if (!post_title) {
         return apiResponse.validationErrorWithData(
           res,
@@ -45,7 +45,7 @@ exports.add_mystory = [
 
       const mystory = new mystory_model({
         post_title: post_title,
-        post_description: post_description,
+        post_description:  post_description,
         media_files: media_files_url,
         CANID: req.user.user.CANID,
       });

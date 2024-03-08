@@ -570,9 +570,9 @@ exports.login_user = [
         user: {
           _id: user_found._id.toString(),
         
-          CANID: can_ids,
+          CANID: user_found.CANID,  
           phone_number: user_found.phone_number,
-          user_profile:user_found.user_profile.user_role
+          user_profile:user_found.root_user,
         },
       };
       // Create and assign token
