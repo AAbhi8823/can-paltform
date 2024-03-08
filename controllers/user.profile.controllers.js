@@ -319,3 +319,78 @@ exports.user_profile_login_pin = [
 ];
 
 
+//update user profile
+
+exports.update_user_profile = [
+  login_validator,
+  upload.single("profile_image"),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!req.file || !req.file.buffer || !req.file.originalname) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Invalid file format or missing file"
+        );
+      }
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+
+      // Check if the user exists
+      const user_found = await user_model.findOne({
+        phone_number: req.user.user.phone_number,
+      });
+
+      if (user_found.user_profile.length == 0) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User profile not found"
+        );
+      }
+
+      // Upload document to S3 bucket
+      const profile_image_url = await aws.single_file_upload(
+        req.file.buffer,
+        req.file.originalname
+      );
+      console.log("line 64", profile_image_url);
+
+      //if user is available  then push user profile in user_profile array and save the user_found
+      user_found.user_profile.unshift({
+        profile_name: req.body.profile_name,
+        profile_role: req.body.profile_role,
+        pin: req.body.pin,
+        profile_image: profile_image_url,
+        mobile: req.body.mobile,
+        date_of_birth: req.body.date_of_birth,
+      });
+
+      // Save the health record
+      const saved_user_profile = await user_found.save();
+      console.log("line 73", saved_user_profile);
+      saved_user_profile.password = undefined;
+      saved_user_profile.user_profile[0].pin = undefined;
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User profile added successfully",
+        saved_user_profile.user_profile[0]
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
+
