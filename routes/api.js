@@ -12,6 +12,7 @@ const subscriptionplanRoutes=require("./subscription.plan.routes")
 const profileListRoutes=require("./mster.profile.list.routes")
 const mystoryRoutes=require("./mystory.routes")
 const meetingRoutes=require("./zoom.live.meeting.management.routes")
+const commentsRoutes=require("./comment.routes")
 
 
 //Middlewares
@@ -25,6 +26,7 @@ app.use("/subscriptionplan",subscriptionplanRoutes)
 app.use("/profilelist",profileListRoutes)   
 app.use("/mystory",mystoryRoutes)
 app.use("/meeting",meetingRoutes)
+app.use("/comments",commentsRoutes)
 
 
 
