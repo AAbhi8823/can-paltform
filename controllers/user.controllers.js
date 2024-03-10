@@ -951,9 +951,9 @@ exports.get_root_user_profile = [
         .findOne({
           phone_number: req.user.user.phone_number,
         })
-        .select(
-          "full_name CANID phone_number email root_user profile_image user_profile"
-        );
+        // .select(
+        //   "full_name CANID phone_number email root_user profile_image user_profile"
+        // );
 
       // Check if the root user exists
       if (!root_user_found) {
@@ -963,6 +963,8 @@ exports.get_root_user_profile = [
         );
       }
 
+      console.log("line 598", root_user_found);
+
       // Extract root user details
       const rootUserDetails = {
         _id: root_user_found._id,
@@ -970,13 +972,15 @@ exports.get_root_user_profile = [
         phone_number: root_user_found.phone_number,
         root_user: root_user_found.root_user,
         profile_image: root_user_found.profile_image,
+        date_of_birth: root_user_found.date_of_birth,
         CANID: root_user_found.CANID,
       };
 
       // Extract all user profiles
       const allUserProfiles = root_user_found.user_profile.map((profile) => ({
+       _id: profile._id,
         profile_role: profile.profile_role,
-        pin: profile.pin,
+       // pin: profile.pin,
         profile_image: profile.profile_image,
         date_of_birth: profile.date_of_birth,
         isSubscribed: profile.isSubscribed,
