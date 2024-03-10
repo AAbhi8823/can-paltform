@@ -289,41 +289,65 @@ exports.user_profile_login_pin = [
           "User profile not found"
         );
       }
-      console.log("line 201", user_found.pin);
-
-      // Find the user profile with the provided PIN
-      const user_profile_found = user_found.user_profile.find(
-        (profile) => profile._id == req.body.profile_id
-      );
-      console.log("line 201", user_profile_found);
-      console.log("line 201", user_profile_found.pin, req.body.pin);
-      if (user_profile_found._id == req.body.profile_id) {
+      console.log("line 201", user_found);
+      //pin login for root user profile and then return the user profile login successfully
+      if (
+        user_found.root_user == "Fighter" &&
+        user_found._id == req.body.profile_id
+      ) {
         if (!req.body.pin) {
           return apiResponse.validationErrorWithData(
             res,
             "Provide 4 digit number for profile access pin"
           );
         } else if (req.body.pin) {
-          const valid_pin = await bcrypt.compare(
-            req.body.pin,
-            user_profile_found.pin
-          );
+          const valid_pin = await bcrypt.compare(req.body.pin, user_found.pin);
           if (valid_pin) {
-            // user_found.password = undefined;
-            user_found.user_profile[0].pin = undefined;
-
+            user_found.password = undefined;
+            user_found.pin = undefined;
+            user_found.user_profile = undefined;
             return apiResponse.successResponseWithData(
               res,
               "User Logged in Successfully.",
-              user_profile_found
+              user_found
             );
+          }
+        }
+      } else {
+        const user_profile_found = user_found.user_profile.find(
+          (profile) => profile._id == req.body.profile_id
+        );
+        // console.log("line 201", user_profile_found);
+        // console.log("line 201", user_profile_found.pin, req.body.pin);
+        if (user_profile_found._id == req.body.profile_id) {
+          if (!req.body.pin) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Provide 4 digit number for profile access pin"
+            );
+          } else if (req.body.pin) {
+            const valid_pin = await bcrypt.compare(
+              req.body.pin,
+              user_profile_found.pin
+            );
+            if (valid_pin) {
+              // user_found.password = undefined;
+              user_found.user_profile[0].pin = undefined;
+
+              return apiResponse.successResponseWithData(
+                res,
+                "User Logged in Successfully.",
+                user_profile_found
+              );
+            } else {
+              return apiResponse.validationErrorWithData(res, "Invalid pin");
+            }
           } else {
             return apiResponse.validationErrorWithData(res, "Invalid pin");
           }
-        } else {
-          return apiResponse.validationErrorWithData(res, "Invalid pin");
         }
       }
+      // Find the user profile with the provided PIN
 
       //now compare the pin and check if it is valid or not and then return the user profile login successfully
 
