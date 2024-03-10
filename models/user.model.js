@@ -13,11 +13,11 @@ const userSchema = new Schema({
   date_of_birth: { type: Date, required: true },
   agreed_To_Terms: { type: Boolean, required: true, default: false },
   otp: { type: String, required: false },
-  otpExpiary: {
-    type: Date,
-    default: Date.now,
-    expires: 600,
-  },
+  // otpExpiary: {
+  //   type: Date,
+  //   default: Date.now,
+  //   expires: 600,
+  // },
   isOTPVerified: {
     type: Boolean,
     default: false,
@@ -25,7 +25,7 @@ const userSchema = new Schema({
   CANID: {
         type: String,
         default: () => `CAN${parseInt(1000+Math.random() * 9000)}`,
-        unique: true,
+        unique: false,
       },
   password: { type: String, required: false },
   // CANID: {
