@@ -66,6 +66,7 @@ const { generateOTP } = require("../helpers/helpers");
 dotenv.config();
 const multer = require("multer");
 const aws = require("../helpers/aws.s3");
+const { use } = require("../routes/user.routes");
 const upload = multer({ storage: multer.memoryStorage() });
 /**
  *  Create/ Register User API
@@ -162,9 +163,16 @@ exports.add_user = [
         });
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
+          //if user is not verified then send the otp again
+          const verification_otp = await generateOTP(phone_number);
+          await sendMobile_OTP(phone_number, verification_otp);
+          user_found.otp = verification_otp;
+          await user_found.save();
+          console.log("line 161", verification_otp);
+
           return res.status(400).json({
             status: false,
-            msg: "You are all ready registerd verify yourself to continue",
+            msg: "You are all ready registerd verify yourself to continue. OTP sent on registered mobile number",
           });
         }
         console.log("line 153", user_found);
@@ -887,12 +895,13 @@ exports.login_user = [
           "Please verify yourself to continue."
         );
       }
-
+ 
       // Check if password is correct
       const validatePassword = await bcrypt.compare(
         password,
         user_found.password
       );
+      console.log("line 554",password,user_found.password, validatePassword);
       //console.log("line 554", validatePassword);
       if (!validatePassword) {
         return apiResponse.validationErrorWithData(res, "Incorrect password");
@@ -942,7 +951,7 @@ exports.get_root_user_profile = [
         .findOne({
           phone_number: req.user.user.phone_number,
         })
-        .select("-user_profile -password -otp -otpExpiary");
+        .select("full_name CANID phone_number email root_user profile_image ");
       console.log("line 146", user_found);
 
       if (!user_found) {
