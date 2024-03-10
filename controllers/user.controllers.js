@@ -895,13 +895,13 @@ exports.login_user = [
           "Please verify yourself to continue."
         );
       }
- 
+
       // Check if password is correct
       const validatePassword = await bcrypt.compare(
         password,
         user_found.password
       );
-      console.log("line 554",password,user_found.password, validatePassword);
+      console.log("line 554", password, user_found.password, validatePassword);
       //console.log("line 554", validatePassword);
       if (!validatePassword) {
         return apiResponse.validationErrorWithData(res, "Incorrect password");
@@ -946,25 +946,53 @@ exports.get_root_user_profile = [
   login_validator,
   async (req, res) => {
     try {
-      // Check if the user exists
-      const user_found = await user_model
+      // Fetch the root user
+      const root_user_found = await user_model
         .findOne({
           phone_number: req.user.user.phone_number,
         })
-        .select("full_name CANID phone_number email root_user profile_image ");
-      console.log("line 146", user_found);
+        .select(
+          "full_name CANID phone_number email root_user profile_image user_profile"
+        );
 
-      if (!user_found) {
+      // Check if the root user exists
+      if (!root_user_found) {
         return apiResponse.validationErrorWithData(
           res,
-          "User profile not found"
+          "Root user profile not found"
         );
       }
 
+      // Extract root user details
+      const rootUserDetails = {
+        _id: root_user_found._id,
+        full_name: root_user_found.full_name,
+        phone_number: root_user_found.phone_number,
+        root_user: root_user_found.root_user,
+        profile_image: root_user_found.profile_image,
+        CANID: root_user_found.CANID,
+      };
+
+      // Extract all user profiles
+      const allUserProfiles = root_user_found.user_profile.map((profile) => ({
+        profile_role: profile.profile_role,
+        pin: profile.pin,
+        profile_image: profile.profile_image,
+        date_of_birth: profile.date_of_birth,
+        isSubscribed: profile.isSubscribed,
+        isBlocked: profile.isBlocked,
+        status: profile.status,
+        CANID: profile.CANID,
+        full_name: profile.full_name,
+      }));
+
+      // Combine root user details with all user profiles
+      const userProfileList = [rootUserDetails, ...allUserProfiles];
+
       return apiResponse.successResponseWithData(
         res,
-        "User profile",
-        user_found
+        "List of user profiles",
+        userProfileList
       );
     } catch (err) {
       console.log("line 80", err);
