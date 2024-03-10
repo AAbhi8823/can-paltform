@@ -15,9 +15,6 @@ const aws = require("../helpers/aws.s3");
 const multer = require("multer");
 const validator = require("../validators/validator");
 
-
-
-
 //multer storage
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -163,8 +160,6 @@ exports.add_user_profile = [
           saved_user_profile.user_profile[0]
         );
       }
-
-      
     } catch (err) {
       console.log("line 80", err);
       return apiResponse.serverErrorResponse(
@@ -181,12 +176,14 @@ exports.get_user_profile_list = [
   login_validator,
   async (req, res) => {
     try {
-      console.log("line 146",req.user.user.phone_number);
+      console.log("line 146", req.user.user.phone_number);
 
       // Check if the user exists
-      const user_found = await user_model.findOne({
-        phone_number: req.user.user.phone_number,
-      }).select("-user_profile.pin");
+      const user_found = await user_model
+        .findOne({
+          phone_number: req.user.user.phone_number,
+        })
+        .select("-user_profile.pin");
       console.log("line 150", user_found);
 
       // if (user_found.user_profile.length == 0) {
@@ -277,47 +274,66 @@ exports.user_profile_login_pin = [
   async (req, res) => {
     try {
       // Check if the user exists
-      //console.log("line 1185", req.user.user.phone_number);
       const user_found = await user_model.findOne({
         phone_number: req.user.user.phone_number,
       });
-      //console.log("line 189", user_found);
 
-      if (user_found.user_profile.length == 0) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "User profile not found"
-        );
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
       }
+
       // Check if the user profile exists
-      const user_profile_found = user_found.user_profile.find(
-        (profile) => profile.pin == req.body.pin
-      );
-      //console.log("line 201", user_profile_found);
-
-      if (!user_profile_found) {
+      if (user_found.user_profile.length === 0) {
         return apiResponse.validationErrorWithData(
           res,
           "User profile not found"
         );
       }
+      console.log("line 201", user_found.pin);
 
-      return apiResponse.successResponseWithData(
-        res,
-        "User Loggedin Successfully.",
-        user_profile_found
+      // Find the user profile with the provided PIN
+      const user_profile_found = user_found.user_profile.find(
+        (profile) => profile._id == req.body.profile_id
       );
+      console.log("line 201", user_profile_found);
+      console.log("line 201", user_profile_found.pin, req.body.pin);
+      if (user_profile_found._id == req.body.profile_id) {
+        if (!req.body.pin) {
+          return apiResponse.validationErrorWithData(
+            res,
+            "Provide 4 digit number for profile access pin"
+          );
+        } else if (req.body.pin) {
+          const valid_pin = await bcrypt.compare(
+            req.body.pin,
+            user_profile_found.pin
+          );
+          if (valid_pin) {
+            // user_found.password = undefined;
+            user_found.user_profile[0].pin = undefined;
+
+            return apiResponse.successResponseWithData(
+              res,
+              "User Logged in Successfully.",
+              user_profile_found
+            );
+          } else {
+            return apiResponse.validationErrorWithData(res, "Invalid pin");
+          }
+        } else {
+          return apiResponse.validationErrorWithData(res, "Invalid pin");
+        }
+      }
+
+      //now compare the pin and check if it is valid or not and then return the user profile login successfully
+
+      // User logged in successfully
     } catch (err) {
-      console.log("line 80", err);
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
+      console.log("Error:", err);
+      return apiResponse.serverErrorResponse(res, "Server Error", err.message);
     }
   },
 ];
-
 
 //update user profile
 
@@ -391,6 +407,3 @@ exports.update_user_profile = [
     }
   },
 ];
-
-
-

@@ -7,6 +7,11 @@ const Schema = mongoose.Schema;
 
 const mystorySchema = new Schema(
   {
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
     post_title: {
       type: String,
       required: true,

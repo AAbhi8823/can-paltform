@@ -44,6 +44,7 @@ exports.add_mystory = [
       console.log("line 42",req.user.user);
 
       const mystory = new mystory_model({
+        user_id: req.user.user._id,
         post_title: post_title,
         post_description:  post_description,
         media_files: media_files_url,
@@ -80,6 +81,67 @@ exports.get_mystory_list = [
         "Mystory List Fetched",
         mystory_list
       );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
+/**
+ *  Get My story list api
+ * in this api use will be able to fetch/see their won story list only
+ *   */
+exports.get_my_story_list = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const mystory_list = await mystory_model.find({
+        CANID: req.user.user.CANID,
+      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Mystory List Fetched",
+        mystory_list
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
+/**
+ * like story api 
+ * in this api user will be able to like the won  story 
+ */
+
+exports.like_story = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const { story_id } = req.body;
+      const mystory = await mystory_model.findById(story_id);
+      if (!mystory) {
+        return apiResponse.notFoundResponse(res, "Story not found");
+      }
+      if (mystory.likes.includes(req.user.user._id)) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "You have already liked this story"
+        );
+      }
+      mystory.likes.push({_id:req.user.user._id},{CANID:req.user.user.CANID});
+      await mystory.save();
+      return apiResponse.successResponse(res, "Story Liked");
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
