@@ -50,15 +50,15 @@ const userSchema = new Schema({
 
   user_profile: [
     {
-      profile_name: {
+      full_name: {
         type: String,
 
         required: false,
       },
-      chiled_user_type: {
-        type: String,
-        required: false,
-      },
+      // chiled_user_type: {
+      //   type: String,
+      //   required: false,
+      // },
       profile_about: {
         type: String,
         required: false,
@@ -90,10 +90,10 @@ const userSchema = new Schema({
         type: String,
         required: false,
       },
-      isSubscribed: {
-        type: Boolean,
-        default: false,
-      },
+      // isSubscribed: {
+      //   type: Boolean,
+      //   default: false,
+      // },
       isBlocked: {
         type: Boolean,
         default: false,
