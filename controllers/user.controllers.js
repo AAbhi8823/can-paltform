@@ -271,7 +271,7 @@ exports.add_user = [
               if (req.body.profile_role != "Fighter") {
                 return res.status(400).json({
                   status: false,
-                  msg: "First user role should be Fighter",
+                  msg: "Select profile.",
                 });
               }
               user_found.root_user = req.body.profile_role;
