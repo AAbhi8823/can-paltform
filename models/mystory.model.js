@@ -21,7 +21,7 @@ const mystorySchema = new Schema(
       required: false,
     },
     media_files: [
-      { 
+      {
         type: String,
         required: false,
         trim: true,
@@ -45,9 +45,15 @@ const mystorySchema = new Schema(
 
     comments: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "Comment",
-        required: false,
+        user_id: { type: Schema.Types.ObjectId, ref: "User", required: false },
+        CANID: {
+          type: String,
+          required: false,
+        },
+        comment: {
+          type: String,
+          required: false,
+        },
         createdAt: {
           type: Date,
           default: Date.now,

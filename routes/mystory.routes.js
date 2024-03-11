@@ -8,6 +8,8 @@ router.get('/get-my-story-list', mystory_controller.get_my_story_list);
 
 //add like to story rpoute
 router.post('/like-story', mystory_controller.like_story);
+//get likes of a story API
+router.get('/get-likes-list', mystory_controller.get_likes);
 
 
 

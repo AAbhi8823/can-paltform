@@ -168,3 +168,44 @@ exports.like_story = [
     }
   },
 ];
+
+//get likes of a story API
+exports.get_likes = [
+  //login_validator,
+  async (req, res) => {
+    try {
+      const story_id = req.body.story_id;
+      const mystory = await mystory_model.findById(story_id);
+      if(!mystory){
+        return apiResponse.notFoundResponse(res, "Story not found");
+      }
+      return apiResponse.successResponseWithData(
+        res,
+        "Likes list",
+        mystory.likes.length
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
+
+
+//add comment to story
+// exports.add_comment = [
+//   login_validator,
+//   async (req, res) => {
+//     try {
+//       const { story_id, comment } = req.body;
+//       const mystory = await mystory_model.findById(story_id);
+//       if(!mystory){
+//         return apiResponse.notFoundResponse(res, "Story not found");
+//       }
+//       const comment_data = {
+//         user_id: req.user.user._id,
+//         comment: comment,
+//       }; 
