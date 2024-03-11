@@ -47,14 +47,20 @@ exports.add_user_profile = [
       });
       console.log("line 150", user_found);
       //Now because of the root user is already added so we can add the other user profile
+      if (user_found.user_profile.length >= 3) {
+                  return apiResponse.validationErrorWithData(
+                    res,
+                    "You can not create more than 3 profiles. Please take our premium plan to create more profiles"
+                  );
+                }
       //check if the user profile is already added or not
       if (
         user_found.root_user == "Fighter" &&
         user_found._id == req.user.user._id
       ) {
         if (
-          (req.body.profile_role =
-            "Veteran" || req.body.profile_role != "Caregiver")
+          (req.body.profile_role ==
+            "Veteran" || req.body.profile_role == "Caregiver")
         ) {
           /**
            * Now take the user details full_name,gender,_date_of_birth and save then procceed further for profile_image and pin
@@ -130,75 +136,78 @@ exports.add_user_profile = [
             date_of_birth: req.body.date_of_birth,
           });
           const saved_root_user_profile = await user_found.save();
+          saved_root_user_profile.user_profile[0].pin = undefined;
           return apiResponse.successResponseWithData(
             res,
             "User profile added successfully",
-            saved_root_user_profile
+            saved_root_user_profile.user_profile[0]
           );
         }
 
-        if (!req.body.profile_role) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Provide profile role"
-          );
-        }
-        if (req.body.profile_role == "Fighter") {
-          return apiResponse.validationErrorWithData(
-            res,
-            "You can not create fighter profile again"
-          );
-        }
-        if (!validator.validatePin(req.body.pin)) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Provide 4 digit number for profile access pin"
-          );
-        }
-        if (!validator.validatePin(req.body.confirm_pin)) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Provide valid confirm pin "
-          );
-        }
-        if (req.body.pin !== req.body.confirm_pin) {
-          return apiResponse.validationErrorWithData(
-            res,
-            "Pin and re-entered pin does not match"
-          );
-        }
-        //upload the profile image to s3 bucket
-        //if image is not uploaded then store null in profile image
-        if (!req.file) {
-          const profile_image_url = null;
-        } else {
-          const profile_image_url = await aws.single_file_upload(
-            req.file.buffer,
-            req.file.originalname
-          );
-        }
-        console.log("line 64", profile_image_url);
-        //update the root user profile and pin and save it
-        user_found.user_profile.unshift({
-          full_name: req.body.full_name,
-          profile_role: req.body.profile_role,
-          pin: hashed_pin,
-          profile_image: profile_image_url,
-          //mobile: req.body.mobile,
-          date_of_birth: req.body.date_of_birth,
-        });
-        const saved_root_user_profile = await user_found.save();
-        return apiResponse.successResponseWithData(
-          res,
-          "User profile added successfully",
-          saved_root_user_profile
-        );
-      } else {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Create  user profile as Fighter first"
-        );
-      }
+      //   if (!req.body.profile_role) {
+      //     return apiResponse.validationErrorWithData(
+      //       res,
+      //       "Provide profile role"
+      //     );
+      //   }
+      //   if (req.body.profile_role == "Fighter") {
+      //     return apiResponse.validationErrorWithData(
+      //       res,
+      //       "You can not create fighter profile again"
+      //     );
+      //   }
+      //   if (!validator.validatePin(req.body.pin)) {
+      //     return apiResponse.validationErrorWithData(
+      //       res,
+      //       "Provide 4 digit number for profile access pin"
+      //     );
+      //   }
+      //   if (!validator.validatePin(req.body.confirm_pin)) {
+      //     return apiResponse.validationErrorWithData(
+      //       res,
+      //       "Provide valid confirm pin "
+      //     );
+      //   }
+      //   if (req.body.pin !== req.body.confirm_pin) {
+      //     return apiResponse.validationErrorWithData(
+      //       res,
+      //       "Pin and re-entered pin does not match"
+      //     );
+      //   }
+      //   //upload the profile image to s3 bucket
+      //   //if image is not uploaded then store null in profile image
+      //   if (!req.file) {
+      //     const profile_image_url = null;
+      //   } else {
+      //     const profile_image_url = await aws.single_file_upload(
+      //       req.file.buffer,
+      //       req.file.originalname
+      //     );
+      //   }
+      //   console.log("line 64", profile_image_url);
+      //   //update the root user profile and pin and save it
+      //   user_found.user_profile.unshift({
+      //     full_name: req.body.full_name,
+      //     profile_role: req.body.profile_role,
+      //     pin: hashed_pin,
+      //     profile_image: profile_image_url,
+      //     //mobile: req.body.mobile,
+      //     date_of_birth: req.body.date_of_birth,
+      //   });
+      //   const saved_root_user_profile = await user_found.save();
+      //   saved_root_user_profile.password = undefined;
+      //   console.log("line 73", saved_root_user_profile);
+      //   return apiResponse.successResponseWithData(
+      //     res,
+      //     "User profile added successfully",
+      //     saved_root_user_profile.user_profile[0]
+      //   );
+      // } else {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Create  user profile as Fighter first"
+      //   );
+       }
     } catch (err) {
       console.log("line 80", err);
       return apiResponse.serverErrorResponse(
