@@ -21,9 +21,9 @@ const mystorySchema = new Schema(
       required: false,
     },
     media_files: [
-      {
+      { 
         type: String,
-        required: true,
+        required: false,
         trim: true,
       },
     ],
