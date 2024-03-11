@@ -69,10 +69,10 @@ exports.add_mystory = [
 //Get All POST/STORY LIST OF USER
 
 exports.get_mystory_list = [
-  login_validator,
+  //login_validator,
   async (req, res) => {
     try {
-      console.log("line 77",req.user.user._id)
+     // console.log("line 77",req.user.user._id)
       const mystory_list = await mystory_model.find({
        // user_id: req.user.user._id,
       });
@@ -97,7 +97,7 @@ exports.get_mystory_list = [
  * in this api use will be able to fetch/see their won story list only
  *   */
 exports.get_my_story_list = [
-  login_validator,
+login_validator,
   async (req, res) => {
     try {
       const mystory_list = await mystory_model.find({
