@@ -2,7 +2,7 @@
 
 
 const jwt = require("jsonwebtoken");
-const apiResponse = require("../helpers/apiResponse");
+const apiResponse = require("../response/apiResponse");
 const secret = process.env.JWT_SECRET;
 
 const adminAuthenticate = (req, res, next) => {

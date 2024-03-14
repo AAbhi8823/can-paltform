@@ -12,6 +12,11 @@ router.get("/get-root-user",user_controllers.get_root_user_profile)
 
 //Password reset
 router.post("/user-password-reset",user_controllers.reset_password)
+//router.post("/user-password-reset-pin",user_controllers.reset_password_pin)
+router.post("/admin-block-root-user",user_controllers.block_root_user_profile )
+router.post("/block-user",user_controllers.block_user_profile )
+
+router.post("/user-profile-pin-reset",user_controllers.reset_pin)
 
 
 

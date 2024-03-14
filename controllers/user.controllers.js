@@ -56,6 +56,8 @@ const validator = require("../validators/validator");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
 const otp_generator = require("../helpers/helpers").generateOTP;
+const admin_validator =
+  require("../middlewares/admin.auth.middleware").adminAuthenticate;
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -947,13 +949,12 @@ exports.get_root_user_profile = [
   async (req, res) => {
     try {
       // Fetch the root user
-      const root_user_found = await user_model
-        .findOne({
-          phone_number: req.user.user.phone_number,
-        })
-        // .select(
-        //   "full_name CANID phone_number email root_user profile_image user_profile"
-        // );
+      const root_user_found = await user_model.findOne({
+        phone_number: req.user.user.phone_number,
+      });
+      // .select(
+      //   "full_name CANID phone_number email root_user profile_image user_profile"
+      // );
 
       // Check if the root user exists
       if (!root_user_found) {
@@ -978,9 +979,9 @@ exports.get_root_user_profile = [
 
       // Extract all user profiles
       const allUserProfiles = root_user_found.user_profile.map((profile) => ({
-       _id: profile._id,
+        _id: profile._id,
         profile_role: profile.profile_role,
-       // pin: profile.pin,
+        // pin: profile.pin,
         profile_image: profile.profile_image,
         date_of_birth: profile.date_of_birth,
         isSubscribed: profile.isSubscribed,
@@ -1107,51 +1108,361 @@ exports.reset_password = [
         return apiResponse.notFoundResponse(res, "User not found");
       }
       //send otp to user and save in db
-      const verification_otp = await generateOTP(phone_number);
-      await sendMobile_OTP(phone_number, verification_otp);
-      user_found.otp = verification_otp;
-      //user_found.otpExpiary = Date.now() + 600000;
-      //const user_otp_saved = await user_found.save();
-      // Send the response
-      console.log("line 146", user_found);
 
-      // Check if otp is correct
-      if (user_found.otp !== otp) {
-        return apiResponse.validationErrorWithData(res, "Invalid OTP");
+      // Check if user is verified
+      if (user_found.isOTPVerified && user_found.password !== null) {
+        if (req.body.otp) {
+          // const verification_otp = await generateOTP(phone_number);
+          // await sendMobile_OTP(phone_number, verification_otp);
+          // user_found.otp = verification_otp;
+          // user_found.otpExpiary = Date.now() + 600000;
+          // const user_otp_saved = await user_found.save();
+          // // Send the response
+          // console.log("line 146", user_found);
+          // console.log("line 146", user_otp_saved.otp == otp);
+
+          // fetch the otp from db
+          const user_otp_saved = await user_model.findOne({
+            $and: [
+              {
+                phone_number: req.user.user.phone_number,
+              },
+              {
+                email: req.user.user.email,
+              },
+            ],
+          });
+          //check the phone number and email is matched or not
+
+          // Check if otp is correct
+          if (user_otp_saved.otp !== otp) {
+            return apiResponse.validationErrorWithData(res, "Invalid OTP");
+          }
+
+          // Check if otp is expired
+          if (user_otp_saved.otpExpiary > Date.now()) {
+            return apiResponse.validationErrorWithData(res, "OTP expired");
+          }
+          if (!req.body.password) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Please provide the password"
+            );
+          }
+          if (!req.body.confirm_password) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Please provide the confirm password"
+            );
+          }
+
+          // Check if password is correct
+          if (password !== confirm_password) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Password and confirm password does not match"
+            );
+          }
+
+          //Password hashing
+          const salt = await bcrypt.genSalt(10);
+          const hashed_password = await bcrypt.hash(password, salt);
+
+          // If otp is correct
+          user_found.otp = undefined;
+          user_found.otpExpiary = undefined;
+          user_found.password = hashed_password;
+          const user_updated = await user_found.save();
+
+          // Send the response
+          return apiResponse.successResponseWithData(
+            res,
+            "Successfully reset password"
+            //user_updated
+          );
+        } else {
+          if (
+            user_found.phone_number !== req.body.phone_number &&
+            req.user.user.phone_number !== req.body.phone_number
+          ) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Phone number is not registered with this account"
+            );
+          }
+
+          const verification_otp = await generateOTP(phone_number);
+          await sendMobile_OTP(phone_number, verification_otp);
+          user_found.otp = verification_otp;
+          //user_found.otpExpiary = Date.now() + 600000;
+          const user_otp_saved = await user_found.save();
+          return apiResponse.successResponse(
+            res,
+            "OTP sent to your registered  mobile number"
+          );
+        }
       }
-
-      // Check if otp is expired
-      if (user_found.otpExpiary > Date.now()) {
-        return apiResponse.validationErrorWithData(res, "OTP expired");
-      }
-
-      // Check if password is correct
-      if (password !== confirm_password) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Password and confirm password does not match"
-        );
-      }
-
-      //Password hashing
-      const salt = await bcrypt.genSalt(10);
-      const hashed_password = await bcrypt.hash(password, salt);
-
-      // If otp is correct
-      user_found.otp = undefined;
-      //user_found.otpExpiary = undefined;
-      user_found.password = hashed_password;
-      const user_updated = await user_found.save();
-
-      // Send the response
-      return apiResponse.successResponseWithData(
-        res,
-        "Successfully reset password",
-        user_updated
-      );
     } catch (err) {
       console.log(err);
       // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Reset pin api
+ * This API will be used to reset the pin of the root_user and users in the user_profile
+ * In this api user will enter the phone number or email and get the OTP verification code
+ * and then user will enter the new pin and confirm pin
+ */
+
+exports.reset_pin = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { phone_number, email, otp, pin, confirm_pin } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findOne({
+        $and: [
+          {
+            phone_number: req.user.user.phone_number,
+          },
+          {
+            email: req.user.user.email,
+          },
+        ],
+      });
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Check if user is verified
+      if (user_found.isOTPVerified) {
+        if (req.body.otp) {
+          // fetch the otp from db
+          const user_otp_saved = await user_model.findOne({
+            $and: [
+              {
+                phone_number: req.user.user.phone_number,
+              },
+              {
+                email: req.user.user.email,
+              },
+            ],
+          });
+
+          // Check if otp is correct
+          if (user_otp_saved.otp !== otp) {
+            return apiResponse.validationErrorWithData(res, "Invalid OTP");
+          }
+
+          // Check if otp is expired
+          if (user_otp_saved.otpExpiary > Date.now()) {
+            return apiResponse.validationErrorWithData(res, "OTP expired");
+          }
+          if (!req.body.pin) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Please provide the pin"
+            );
+          }
+          if (!req.body.confirm_pin) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Please provide the confirm pin"
+            );
+          }
+
+          // Check if pin is correct
+          if (pin !== confirm_pin) {
+            return apiResponse.validationErrorWithData(
+              res,
+              "Pin and confirm pin does not match"
+            );
+          }
+
+          //hash the pin
+          const hashed_pin = await bcrypt.hash(pin, 10);
+
+          // If otp is correct
+          user_found.otp = undefined;
+          user_found.otpExpiary = undefined;
+          user_found.pin = hashed_pin;
+          const user_updated = await user_found.save();
+
+          // Send the response
+          return apiResponse.successResponseWithData(
+            res,
+            "Successfully reset pin",
+            user_updated
+          );
+        } else {
+          if (
+            user_found.phone_number !== req.body.phone_number &&
+            req.user.user.phone_number !== req.body.phone_number
+          ) {
+            return apiResponse.validationErrorWithData
+              .status(400)
+              .json({ status: false, msg: "Phone number is not registered" });
+          }
+          const verification_otp = await generateOTP(phone_number);
+          await sendMobile_OTP(phone_number, verification_otp);
+          user_found.otp = verification_otp;
+          //user_found.otpExpiary = Date.now() + 600000;
+          const user_otp_saved = await user_found.save();
+          return apiResponse.successResponse(
+            res,
+            "OTP sent to your registered mobile number"
+          );
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Block root_user profile API
+ * In this api Admin will be able to block the root user profile
+ */
+
+exports.block_root_user_profile = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the root user
+      const root_user_found = await user_model.findOne({
+        phone_number: req.user.user.phone_number,
+      });
+
+      // Check if the root user exists
+      if (!root_user_found) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Root user profile not found"
+        );
+      }
+
+      // Block the root user
+      root_user_found.isBlocked = true;
+      const root_user_blocked = await root_user_found.save();
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Root user profile blocked",
+        root_user_blocked
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Block user profile API
+ * In this api the one user will be able to block tyo other user profile
+ */
+
+exports.block_user_profile = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the user from root_user or from user_profile
+      const user_found = await user_model.findOne({
+        $or: [
+          { _id: req.body.user_id },
+
+          {
+            "user_profile._id": req.body.user_id,
+          },
+        ],
+      })//.select("user_profile");
+      console.log("line 80", user_found);
+
+      // Check if the user exists
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      let userToUpdate;
+      if (user_found._id.toString() === req.body.user_id) {
+        userToUpdate = user_found;
+      } else {
+        userToUpdate = user_found.user_profile.find(
+          (profile) => profile._id === req.body.user_id
+        );
+      }
+
+      // Toggle the isBlocked status
+      userToUpdate.isBlocked = !userToUpdate.isBlocked;
+
+      if (user_found.isBlocked) {
+        user_found.isBlocked = false;
+        const user_blocked = await user_found.save();
+        const blocked_user_response = {
+          _id: user_blocked._id,
+          profile_image: user_blocked.profile_image,
+          full_name: user_blocked.full_name,
+          phone_number: user_blocked.phone_number,
+          email: user_blocked.email,
+          isBlocked: user_blocked.isBlocked,
+        };
+        return apiResponse.successResponseWithData(
+          res,
+          "Successfully, User profile unblocked",
+          blocked_user_response //user_blocked
+        );
+      }
+      // Block the user
+      user_found.isBlocked = true;
+      const user_blocked = await user_found.save();
+      const blocked_user_response = {
+        _id: user_blocked._id,
+        profile_image: user_blocked.profile_image,
+        full_name: user_blocked.full_name,
+        phone_number: user_blocked.phone_number,
+        email: user_blocked.email,
+        isBlocked: user_blocked.isBlocked,
+      };
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully, User profile blocked",
+        blocked_user_response // user_blocked
+      );
+    } catch (err) {
+      console.log("line 80", err);
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",

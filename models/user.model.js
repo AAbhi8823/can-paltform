@@ -13,11 +13,11 @@ const userSchema = new Schema({
   date_of_birth: { type: Date, required: true },
   agreed_To_Terms: { type: Boolean, required: true, default: false },
   otp: { type: String, required: false },
-  // otpExpiary: {
-  //   type: Date,
-  //   default: Date.now,
-  //   expires: 600,
-  // },
+  otpExpiary: {
+    type: Date,
+    required: false,
+    
+  },
   isOTPVerified: {
     type: Boolean,
     default: false,
@@ -108,7 +108,17 @@ const userSchema = new Schema({
         default: "Active",
       },
     },
-  ], // user_profile_image_url: { type: String, required: false },
+  ], 
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
+  isAdimn: {
+    type: Boolean,
+    default: false,
+  },
+  
+  // user_profile_image_url: { type: String, required: false },
   // user_profile_name: { type: String, required: false },
 
   // user_type: {
