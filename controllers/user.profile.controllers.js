@@ -477,18 +477,18 @@ exports.user_profile_login_pin = [
       const user_found = await user_model.findOne({
         phone_number: req.user.user.phone_number,
       });
-
+console.log("line 189", user_found);  
       if (!user_found) {
         return apiResponse.validationErrorWithData(res, "User not found");
       }
 
       // Check if the user profile exists
-      if (user_found.user_profile.length === 0) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "User profile not found"
-        );
-      }
+      // if (user_found.user_profile.length === 0) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "User profile not found"
+      //   );
+      // }
       console.log("line 201", user_found);
       //pin login for root user profile and then return the user profile login successfully
       if (
