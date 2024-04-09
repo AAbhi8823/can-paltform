@@ -278,10 +278,14 @@ exports.add_user = [
             //UPDATE THE ROOT USER profile
             if (user_found.password && user_found.root_user == null) {
               console.log("line 278", req.body.profile_role);
-              if (req.body.profile_role != "Fighter") {
+              if (
+                req.body.profile_role != "Fighter" ||
+                "Caregiver" ||
+                "Veteran"
+              ) {
                 return res.status(400).json({
                   status: false,
-                  msg: "Select profile.",
+                  msg: "Select valid profile.",
                 });
               }
               user_found.root_user = req.body.profile_role;
@@ -394,6 +398,9 @@ exports.add_user = [
               "Error in creating root user"
             );
           }
+          root_user_created.password = undefined;
+          root_user_created.otp = undefined;
+          root_user_created.pin = undefined;
           return res.status(200).json({
             status: true,
             message: "Successfully, account created. ",
@@ -1407,7 +1414,7 @@ exports.block_user_profile = [
             "user_profile._id": req.body.user_id,
           },
         ],
-      })//.select("user_profile");
+      }); //.select("user_profile");
       console.log("line 80", user_found);
 
       // Check if the user exists

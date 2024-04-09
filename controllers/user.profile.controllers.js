@@ -55,7 +55,7 @@ exports.add_user_profile = [
       }
       //check if the user profile is already added or not
       if (
-        user_found.root_user == "Fighter" &&
+       ( user_found.root_user == "Fighter" || user_found.root_user=="Caregiver")&&
         user_found._id == req.user.user._id
       ) {
         if (
