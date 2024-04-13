@@ -55,7 +55,7 @@ exports.add_user_profile = [
       }
       //check if the user profile is already added or not
       if (
-       ( user_found.root_user == "Fighter" || user_found.root_user=="Caregiver")&&
+       ( user_found.user_profile == "Fighter" || user_found.user_profile=="Caregiver")&&
         user_found._id == req.user.user._id
       ) {
         if (
@@ -133,12 +133,12 @@ exports.add_user_profile = [
             //mobile: req.body.mobile,
             date_of_birth: req.body.date_of_birth,
           });
-          const saved_root_user_profile = await user_found.save();
-          saved_root_user_profile.user_profile[0].pin = undefined;
+          const saved_user_profile_profile = await user_found.save();
+          saved_user_profile_profile.user_profile[0].pin = undefined;
           return apiResponse.successResponseWithData(
             res,
             "User profile added successfully",
-            saved_root_user_profile.user_profile[0]
+            saved_user_profile_profile.user_profile[0]
           );
         }
 
@@ -192,13 +192,13 @@ exports.add_user_profile = [
         //     //mobile: req.body.mobile,
         //     date_of_birth: req.body.date_of_birth,
         //   });
-        //   const saved_root_user_profile = await user_found.save();
-        //   saved_root_user_profile.password = undefined;
-        //   console.log("line 73", saved_root_user_profile);
+        //   const saved_user_profile_profile = await user_found.save();
+        //   saved_user_profile_profile.password = undefined;
+        //   console.log("line 73", saved_user_profile_profile);
         //   return apiResponse.successResponseWithData(
         //     res,
         //     "User profile added successfully",
-        //     saved_root_user_profile.user_profile[0]
+        //     saved_user_profile_profile.user_profile[0]
         //   );
         // } else {
         //   return apiResponse.validationErrorWithData(
@@ -236,15 +236,15 @@ exports.add_user_profile = [
 //           errors.array()
 //         );
 //       }
-//       //check user_profile is epmty or not if empty then add root_user and if root_user is already added then add other user profile in user_profile array
+//       //check user_profile is epmty or not if empty then add user_profile and if user_profile is already added then add other user profile in user_profile array
 
-//       const root_user_found = await user_model.findOne({
+//       const user_profile_found = await user_model.findOne({
 //         phone_number: req.user.user.phone_number,
 //       });
-//       if (root_user_found.root_user == null) {
+//       if (user_profile_found.user_profile == null) {
 //         //save the root user profile is Fighter
-//         const root_user_role = req.body.profile_role;
-//         if (root_user_role == "Fighter") {
+//         const user_profile_role = req.body.profile_role;
+//         if (user_profile_role == "Fighter") {
 //           // Save the health record
 //           //check for pin validation
 //           if (!validator.validatePin(req.body.pin)) {
@@ -274,16 +274,16 @@ exports.add_user_profile = [
 //           console.log("line 64", profile_image_url);
 
 //           //update the root user profile and pin and save it
-//           root_user_found.root_user = req.body.profile_role;
-//           root_user_found.pin = hashed_pin;
-//           root_user_found.profile_image = profile_image_url;
-//           const saved_root_user_profile = await root_user_found.save();
-//           saved_root_user_profile.password = undefined;
-//           saved_root_user_profile.pin = undefined;
+//           user_profile_found.user_profile = req.body.profile_role;
+//           user_profile_found.pin = hashed_pin;
+//           user_profile_found.profile_image = profile_image_url;
+//           const saved_user_profile_profile = await user_profile_found.save();
+//           saved_user_profile_profile.password = undefined;
+//           saved_user_profile_profile.pin = undefined;
 //           return apiResponse.successResponseWithData(
 //             res,
 //             "User profile added successfully",
-//             saved_root_user_profile
+//             saved_user_profile_profile
 //           );
 //         } else {
 //           return apiResponse.validationErrorWithData(
@@ -322,7 +322,7 @@ exports.add_user_profile = [
 //           );
 //         }
 //         //check if profile size in user_profile array is greater than 3 then redirect to upgrade the premium plan
-//         if (root_user_found.user_profile.length >= 3) {
+//         if (user_profile_found.user_profile.length >= 3) {
 //           return apiResponse.validationErrorWithData(
 //             res,
 //             "You can not create more than 3 profiles. Please take our premium plan to create more profiles"
@@ -340,7 +340,7 @@ exports.add_user_profile = [
 
 //         const hashed_pin = await bcrypt.hash(req.body.pin, 10);
 //         //if user is available  then push user profile in user_profile array and save the user_found
-//         root_user_found.user_profile.unshift({
+//         user_profile_found.user_profile.unshift({
 //           profile_name: req.body.profile_name,
 //           profile_role: req.body.profile_role,
 //           pin: hashed_pin,
@@ -349,7 +349,7 @@ exports.add_user_profile = [
 //           date_of_birth: req.body.date_of_birth,
 //         });
 //         // Save the health record
-//         const saved_user_profile = await root_user_found.save();
+//         const saved_user_profile = await user_profile_found.save();
 //         console.log("line 73", saved_user_profile);
 //         saved_user_profile.password = undefined;
 //         saved_user_profile.user_profile[0].pin = undefined;
@@ -492,7 +492,7 @@ console.log("line 189", user_found);
       console.log("line 201", user_found);
       //pin login for root user profile and then return the user profile login successfully
       if (
-        user_found.root_user == "Fighter" &&
+        user_found.user_profile == "Fighter" &&
         user_found._id == req.body.profile_id
       ) {
         if (!req.body.pin) {
