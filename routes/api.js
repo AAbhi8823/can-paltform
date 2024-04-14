@@ -13,6 +13,7 @@ const profileListRoutes=require("./mster.profile.list.routes")
 const mystoryRoutes=require("./mystory.routes")
 const meetingRoutes=require("./zoom.live.meeting.management.routes")
 const commentsRoutes=require("./comment.routes")
+//const saveMystoryroutes=require("./saved.routes")
 
 
 //Middlewares
@@ -27,7 +28,7 @@ app.use("/profilelist",profileListRoutes)
 app.use("/mystory",mystoryRoutes)
 app.use("/meeting",meetingRoutes)
 app.use("/comments",commentsRoutes)
-
+//app.use("/save",saveMystoryroutes)
 
 
 module.exports=app
