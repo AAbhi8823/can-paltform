@@ -172,9 +172,9 @@ exports.add_user = [
         if (user_found) {
           return res
             .status(400)
-            .json({ status: false, msg: "User already exists" });
+            .json({ status: false, msg: ` ${phone_number} This phone number is already registerd` });
         }
-        // console.log("line 154", user_found);
+        console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
           const verification_otp = await generateOTP(phone_number);
