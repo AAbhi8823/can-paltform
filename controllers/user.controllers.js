@@ -169,11 +169,23 @@ exports.add_user = [
             },
           ],
         });
+      
+        console.log("line 172",user_found)
         if (user_found) {
           return res
             .status(400)
-            .json({ status: false, msg: ` ${phone_number} This phone number is already registerd` });
+            .json({
+              status: false,
+              msg: ` ${phone_number} This phone number is already registerd`,
+            });
         }
+        // if(user_found.email){
+        //   return res.status(409).json({
+        //     status:false,
+        //     message:`${user_found.email} is already registered.`
+
+        //   })
+       // }
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
@@ -241,6 +253,16 @@ exports.add_user = [
             },
           ],
         });
+        if(user_found && user_found.isOTPVerified==true && user_found.user_profile) {
+          return res.status(409).json({
+            status: false,
+            msg: "User Already created!.",
+           // data: user_updated_profile,
+          });
+        } 
+        //check email
+     
+      
         console.log("line 229", user_found);
         //validate the otp
         if (!user_found) {
@@ -260,14 +282,14 @@ exports.add_user = [
         //now add password
         if (user_found.isOTPVerified == true) {
           if (!req.body.password) {
-            return res.status(400).json({
-              status: false,
+            return res.status(200).json({
+              status: true,
               msg: "Please provide the password.",
             });
           }
           if (!req.body.confirm_password) {
-            return res.status(400).json({
-              status: false,
+            return res.status(200).json({
+              status: true,
               msg: "Please provide the confirm password.",
             });
           }
@@ -325,19 +347,17 @@ exports.add_user = [
             }
             user_updated_profile.password = undefined;
             user_updated_profile.otp = undefined;
-
-            return res.status(200).json({
-              status: true,
-              message: "Successfully, account created ...",
-              data: user_updated_profile,
-            });
-          } else {
-            return res.status(409).json({
-              status: false,
-              msg: "User Already created!.",
-              data: user_updated_profile,
-            });
-          }
+        
+            if(user_updated_profile){
+              return res.status(200).json({
+                status: true,
+                message: "Successfully, account created ...",
+                data: user_updated_profile,
+              });
+            }
+           
+          } 
+         
         }
       }
 
@@ -413,13 +433,6 @@ exports.google_user_registration = [
 
 /**
  * Create password for user account API
-
-
-
-
-
-
-
 
 // exports.add_user = [
 //   upload.single("profile_image"),
