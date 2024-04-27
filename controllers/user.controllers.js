@@ -1044,11 +1044,7 @@ exports.login_user_with_otp = [
           expiresIn: "1d",
         });
 
-        // Send the response
-
-        // If otp is correct
-        // user_found.otp = undefined;
-        // user_found.otpExpiary = undefined;
+        
         const user_updated = await user_found.save();
 
         // Send the response
