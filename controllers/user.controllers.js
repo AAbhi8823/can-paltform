@@ -176,7 +176,7 @@ exports.add_user = [
             .status(400)
             .json({
               status: false,
-              msg: ` ${phone_number} This phone number is already registerd`,
+              msg: ` ${phone_number} This phone number is already registerd.`,
             });
         }
         // if(user_found.email){
