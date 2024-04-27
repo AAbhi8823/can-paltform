@@ -236,7 +236,7 @@ exports.add_user = [
         if (user_found.isOTPVerified == false) {
           return res.status(400).json({
             status: false,
-            msg: "You are all ready registerd verify yourself to continue",
+            msg: "You are all ready registerd verify yourself to continue.",
           });
         }
 
