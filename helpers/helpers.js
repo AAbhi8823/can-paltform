@@ -65,6 +65,7 @@ function sendOTP(numbers,otp) {
     });
 }
 
+
 // Example usage:
 // const apiKey = process.env.FAST2SMS_API_KEY; //'RTGB4Z5NZRjnKuFFRra6qvSneBlJhggH3tNCv11BaKsgZI7S1cwUnrvxklDq';
 // const mobileNumbers = ["9471948174"];
@@ -73,11 +74,40 @@ function sendOTP(numbers,otp) {
 //   sendOTP( "9310194009")
 //      .then(response => console.log(response))
 //      .catch(error => console.error(error));
+ 
+/**
+ * Send OTP to the given email address suing   function f
+ */
+// function sendOTPToEmail(email, otp) {
+//   const subject = "Your OTP for login";
+//   const text = `Your OTP for login is ${otp}`;
 
-module.exports={
-    sendOTP,
-    generateOTP
-}
+//   const msg = {
+//     to: email,
+//     from: process.env.SENDGRID_EMAIL,
+//     subject: subject,
+//     text: text,
+//   };
+
+//   return sgMail
+//     .send(msg)
+//     .then(() => {
+//       console.log("Email sent");
+//     })
+//     .catch((error) => {
+//       console.error(error);
+//       throw new Error("Failed to send OTP");
+//     });
+// }
+
+// module.exports={
+//     sendOTP,
+//     generateOTP,
+//     sendOTPToEmail
+
+
+
+// }
 
 //===========================TWILIO===================================================
 

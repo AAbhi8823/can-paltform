@@ -169,15 +169,13 @@ exports.add_user = [
             },
           ],
         });
-      
-        console.log("line 172",user_found)
+
+        console.log("line 172", user_found);
         if (user_found) {
-          return res
-            .status(400)
-            .json({
-              status: false,
-              msg: ` ${phone_number} This phone number is already registerd.`,
-            });
+          return res.status(400).json({
+            status: false,
+            msg: ` ${phone_number} This phone number is already registerd.ls`,
+          });
         }
         // if(user_found.email){
         //   return res.status(409).json({
@@ -185,7 +183,7 @@ exports.add_user = [
         //     message:`${user_found.email} is already registered.`
 
         //   })
-       // }
+        // }
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
@@ -253,16 +251,19 @@ exports.add_user = [
             },
           ],
         });
-        if(user_found && user_found.isOTPVerified==true && user_found.user_profile) {
+        if (
+          user_found &&
+          user_found.isOTPVerified == true &&
+          user_found.user_profile
+        ) {
           return res.status(409).json({
             status: false,
             msg: "User Already created!.",
-           // data: user_updated_profile,
+            // data: user_updated_profile,
           });
-        } 
+        }
         //check email
-     
-      
+
         console.log("line 229", user_found);
         //validate the otp
         if (!user_found) {
@@ -347,17 +348,15 @@ exports.add_user = [
             }
             user_updated_profile.password = undefined;
             user_updated_profile.otp = undefined;
-        
-            if(user_updated_profile){
+
+            if (user_updated_profile) {
               return res.status(200).json({
                 status: true,
                 message: "Successfully, account created ...",
                 data: user_updated_profile,
               });
             }
-           
-          } 
-         
+          }
         }
       }
 
@@ -1034,7 +1033,7 @@ exports.login_user_with_otp = [
         const payload = {
           user: {
             _id: user_found._id.toString(),
-            CANID:user_found.CANID,
+            CANID: user_found.CANID,
             phone_number: user_found.phone_number,
             user_profile: user_found.user_profile,
           },
@@ -1044,7 +1043,6 @@ exports.login_user_with_otp = [
           expiresIn: "1d",
         });
 
-        
         const user_updated = await user_found.save();
 
         // Send the response
@@ -1201,7 +1199,7 @@ exports.add_user_profile = [
  *
  */
 exports.reset_password = [
-  login_validator,
+  //login_validator,
   async (req, res) => {
     try {
       // Express validator
@@ -1222,11 +1220,11 @@ exports.reset_password = [
       const user_found = await user_model.findOne({
         $and: [
           {
-            phone_number: req.user.user.phone_number,
+            phone_number:  phone_number,
           },
-          {
-            email: req.user.user.email,
-          },
+          // {
+          //   email:email,
+          // },
         ],
       });
       if (!user_found) {
@@ -1250,11 +1248,11 @@ exports.reset_password = [
           const user_otp_saved = await user_model.findOne({
             $and: [
               {
-                phone_number: req.user.user.phone_number,
+                phone_number:  phone_number,
               },
-              {
-                email: req.user.user.email,
-              },
+              // {
+              //   email: email,
+              // },
             ],
           });
           //check the phone number and email is matched or not
