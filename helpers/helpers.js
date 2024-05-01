@@ -100,14 +100,14 @@ function sendOTP(numbers,otp) {
 //     });
 // }
 
-// module.exports={
-//     sendOTP,
-//     generateOTP,
-//     sendOTPToEmail
+module.exports={
+    sendOTP,
+    generateOTP,
+   //git  sendOTPToEmail
 
 
 
-// }
+}
 
 //===========================TWILIO===================================================
 
