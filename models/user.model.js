@@ -44,6 +44,11 @@ const userSchema = new Schema(
     },
     profile_image: { type: String, required: false },
 
+
+    resetPasswordToken: {
+      type: String,
+      required: false,
+    },
     // user_profile: [
     //   {
     //     full_name: {

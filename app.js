@@ -16,10 +16,23 @@ const multer = require("multer");
 const flash = require("connect-flash"); //for flash messages
 //const session = require('express-session');
 //const cookieParser = require('cookie-parser');
+
+
+
 const db_connection=require("./database/db.configurations").connectDB
 const PORT=process.env.PORT || 3000
 const dotenv=require('dotenv')
 dotenv.config();
+
+//-------------------
+//ejs configuration
+//-------------------
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+
+
+
+
 
 //-------------------
 //connect to database

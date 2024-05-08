@@ -13,8 +13,12 @@
 require("dotenv").config();
 const axios = require("axios");
 const fast2sms = require("fast-two-sms");
+const crypto = require('crypto');
 
 const API_KEY = process.env.FAST2SMS_API_KEY;
+const emailUser = process.env.EMAIL_SMTP_USERNAME;
+const emailPass = process.env.EMAIL_SMTP_PASSWORD;
+const nodemailer = require("nodemailer");
 
 //fast2sms.initialize(API_KEY);
 
@@ -100,43 +104,64 @@ function sendOTP(numbers,otp) {
 //     });
 // }
 
-module.exports={
-    sendOTP,
-    generateOTP,
-   //git  sendOTPToEmail
 
+
+//===========================Password Reset Function===================================================
+
+
+
+// Generate a unique token for password reset link
+function generateResetToken() {
+    return crypto.randomBytes(20).toString('hex');
+}
+
+// Send password reset link to Email
+async function sendResetLink(emailAddress, resetLink) {
+    try {
+        // const resetToken = generateResetToken();
+        // console.log(resetToken);
+
+        // Code to save resetToken in the database with user's email for verification
+        
+        // Constructing the password reset link
+        //const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+        
+        // Create and send email
+        const emailTransporter = nodemailer.createTransport({
+            service: "gmail", // Replace with your email service,
+            auth: {
+              user: emailUser, //email username,
+              pass: emailPass, //email password,
+            },
+          });
+          
+          const emailOptions = {
+            from: emailUser,
+            to: emailAddress,
+            subject: 'Password Reset Request',
+            text: `Dear User,\n\nYou requested to reset your password. Please click on the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest Regards,\nYour Website Team`,
+          };
+          
+          emailTransporter.sendMail(emailOptions, (err, info) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log(`Email sent: ${info.response}`);
+            }
+          });
+          
+        return resetLink;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+module.exports={
+  sendOTP,
+  generateOTP,
+  sendResetLink,
+  generateResetToken
 
 
 }
-
-//===========================TWILIO===================================================
-
-// const client = twilio(accountSid, authToken);
-// //otp generator
-// function generateOTP() {
-//   return Math.floor(1000 + Math.random() * 9000);
-// }
-// //send otp to mobile
-// async function sendOTP(phone, email) {
-//   try {
-//     const otp = generateOTP();
-//     console.log(otp);
-//     client.messages
-//       .create({
-//         body: `Your OTP for login is ${otp}`,
-//         from: process.env.TWILIO_PHONE_NUMBER,
-//         to: `+91${phone}`,
-//       })
-//       .then((message) => console.log(message.sid));
-
-//     return otp;
-//   } catch (err) {
-//     console.error(err.message);
-//     return res
-//       .status(500)
-//       .json({ status: false, msg: "OTP Not Sent", error: err.message });
-//   }
-// }
-// sendOTP("9871948174","abhishek.tom963@gmailcom");
-
-// module.exports = { sendOTP };
