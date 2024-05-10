@@ -21,8 +21,8 @@ const healthcardSchema = new Schema(
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       required: true,
     },
-    height: { type: String, required: true },
-    weight: { type: String, required: true },
+    height: { type: String, required: false },
+    weight: { type: String, required: false },
     cancer_type: {
       type: String,
       enum: [
@@ -78,7 +78,7 @@ const healthcardSchema = new Schema(
           type: String,
           required: false,
         },
-        doc_url:{
+        document_url:{
             type: String,
             required: false,
         }
