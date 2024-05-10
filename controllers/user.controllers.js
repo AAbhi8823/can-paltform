@@ -1380,7 +1380,7 @@ exports.user_forgot_password = [
       //const restcrypto.randomBytes(32).toString("hex");
       const token = await bcrypt.hash(jwt_token, 10);
       console.log("line 1386", token);
-      const reset_link = `http://13.127.13.92/git/api/v1/user/reset-password?token=${token}&id=${user_found._id}`; //`${process.env.CLIENT_URL}/api/v1/reset-password/${user_found._id}/${token}`;
+      const reset_link = `http://13.127.13.92/api/v1/user/reset-password?token=${token}&id=${user_found._id}`; //`${process.env.CLIENT_URL}/api/v1/reset-password/${user_found._id}/${token}`;
 
       //const reset_token = await helpers.generateResetToken(reset_link);
       ///console.log("line 598", reset_token);
