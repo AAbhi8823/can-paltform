@@ -28,21 +28,23 @@ exports.add_appointment = [
         hospital_name,
         hospital_address,
         appointment_date,
+        appointment_day,
         appointment_time,
         remarks,
+        add_note,
       } = req.body;
 
-    //   console.log(
-    //     "line 34",
-    //     !validator.validateDateTime(req.body.appointment_date)
-    //   );
+      //   console.log(
+      //     "line 34",
+      //     !validator.validateDateTime(req.body.appointment_date)
+      //   );
 
-      if (!validator.validateDateTime(req.body.appointment_date)) {
-          return apiResponse.validationErrorWithData(
-          res,
-          "Invalid appointment date"
-          );
-      }
+      // if (!validator.validateDateTime(req.body.appointment_date)) {
+      //     return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Invalid appointment date"
+      //     );
+      // }
       // if (!validator.validateDateTime(req.body.appointment_time)) {
       //     return apiResponse.validationErrorWithData(
       //     res,
@@ -86,15 +88,16 @@ exports.add_appointment = [
           "Appointment time is required"
         );
       }
-console.log("line 89",req.user.user._id)
+      console.log("line 89", req.user.user._id);
       const new_appointment = new appointment_model({
-        user_id:req.user.user._id,
-        CANID:req.user.user.CANID,
+        user_id: req.user.user._id,
+        CANID: req.user.user.CANID,
         appointment_name,
         doctor_name,
         hospital_name,
         hospital_address,
-        appointment_date,
+        appointment_date: appointment_date,
+        appointment_day,
         appointment_time,
         add_note,
       });
@@ -129,17 +132,21 @@ exports.update_appointment = [
           errors.array()
         );
       }
-      const appointment = await appointment_controllers.findByIdAndUpdate(
-        req.user._id,
-        req.body,
-        { new: true }
+      console.log("line 123", req.body);  
+      
+      const appointment = await appointment_model.findByIdAndUpdate(
+        {  user_id: req.user.user._id ,  _id: req.body.appointment_id  },
+        req.body, // Ensure req.body only contains fields you want to update
+        { new: true } // Return the updated document
       );
+      console.log("line 130", appointment);
       return apiResponse.successResponseWithData(
         res,
         "Appointment updated successfully",
         appointment
       );
     } catch (err) {
+    
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
@@ -177,15 +184,18 @@ exports.get_appointment_list = [
   login_validator,
   async (req, res) => {
     try {
-      const appointment = await appointment_controllers.find({
-        user_id: req.user._id,
+      console.log("line 166", req.user.user._id);
+      const appointment = await appointment_model.find({
+        user_id: req.user.user._id,
       });
+      console.log("line 169", appointment);
       return apiResponse.successResponseWithData(
         res,
         "Appointment list",
         appointment
       );
     } catch (err) {
+      console.log("line 177", err.messsage);
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
