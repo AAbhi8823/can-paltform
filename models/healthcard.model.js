@@ -72,7 +72,7 @@ const healthcardSchema = new Schema(
         // relation:{type:String,required:false}
       },
     ],
-    document_attached: [
+    document_attached: 
       {
         document_name: {
           type: String,
@@ -83,7 +83,7 @@ const healthcardSchema = new Schema(
             required: false,
         }
       },
-    ],
+    
   },
 
   { timestamps: true }
