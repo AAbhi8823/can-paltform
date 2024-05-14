@@ -92,7 +92,7 @@ app.use("*", (req, res) => {
 // }
 
 
-console.log("line 80 WORKER PID",numCPUs, process.pid); 
+//console.log("line 80 WORKER PID", process.pid); 
 
 
 //start server
