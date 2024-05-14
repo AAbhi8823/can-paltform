@@ -205,5 +205,29 @@ exports.get_appointment_list = [
   },
 ];
 
+//upcoming appointment
+exports.upcoming_appointment = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const currentDate = new Date();
+     
+      const upcomingAppointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date: { $gte: currentDate }, // Filter appointments with appointment_date greater than or equal to current date
+      });
 
-
+      return apiResponse.successResponseWithData(
+        res,
+        "Upcoming appointments",
+        upcomingAppointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];

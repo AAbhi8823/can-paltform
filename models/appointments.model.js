@@ -15,7 +15,11 @@ const appointmentSchema = new Schema(
     hospital_name: { type: String, required: true },
     hospital_address: { type: String, required: false },
     appointment_date: { type: Date, required: true },
-    appointment_day: { type: String, required: true },
+    appointment_day: {
+      type: String,
+      enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      required: true,
+    },
     appointment_time: [
       {
         type: String,

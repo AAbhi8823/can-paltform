@@ -22,13 +22,18 @@ excel, pdf, png, jpeg, jpg, etc.
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const healthRecordSchema = new Schema({
-    CANID: { type: String, required: true },
+const healthRecordSchema = new Schema(
+  {
+    user_id: { type: Schema.Types.ObjectId, ref: "User", required: false },
+    CANID: { type: String, required: false },
     document_type: { type: String, required: false },
     document_name: { type: String, required: false },
     document_url: { type: String, required: false },
     document_date: { type: Date, required: false },
     document_description: { type: String, required: false },
-    });
+   
+  },
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("HealthRecord", healthRecordSchema);

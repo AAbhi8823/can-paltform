@@ -13,7 +13,7 @@ const medicineSchema = new Schema(
     medicine_type: { 
       type: String,
       enum: ["Tablet", "Capsule", "Syrup", "Injection", "Other"],
-      required: true,
+      required: false,
      },
     medicine_dosage: { type: String, required: true },
     meal: { 
