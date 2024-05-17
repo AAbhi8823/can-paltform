@@ -28,21 +28,23 @@ exports.add_appointment = [
         hospital_name,
         hospital_address,
         appointment_date,
+        appointment_day,
         appointment_time,
         remarks,
+        add_note,
       } = req.body;
 
-    //   console.log(
-    //     "line 34",
-    //     !validator.validateDateTime(req.body.appointment_date)
-    //   );
+      //   console.log(
+      //     "line 34",
+      //     !validator.validateDateTime(req.body.appointment_date)
+      //   );
 
-      if (!validator.validateDateTime(req.body.appointment_date)) {
-          return apiResponse.validationErrorWithData(
-          res,
-          "Invalid appointment date"
-          );
-      }
+      // if (!validator.validateDateTime(req.body.appointment_date)) {
+      //     return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Invalid appointment date"
+      //     );
+      // }
       // if (!validator.validateDateTime(req.body.appointment_time)) {
       //     return apiResponse.validationErrorWithData(
       //     res,
@@ -86,15 +88,16 @@ exports.add_appointment = [
           "Appointment time is required"
         );
       }
-console.log("line 89",req.user.user._id)
+      console.log("line 89", req.user.user._id);
       const new_appointment = new appointment_model({
-        user_id:req.user.user._id,
-        CANID:req.user.user.CANID,
+        user_id: req.user.user._id,
+        CANID: req.user.user.CANID,
         appointment_name,
         doctor_name,
         hospital_name,
         hospital_address,
-        appointment_date,
+        appointment_date: appointment_date,
+        appointment_day,
         appointment_time,
         add_note,
       });
@@ -129,11 +132,14 @@ exports.update_appointment = [
           errors.array()
         );
       }
-      const appointment = await appointment_controllers.findByIdAndUpdate(
-        req.user._id,
-        req.body,
-        { new: true }
+      console.log("line 123", req.body);
+
+      const appointment = await appointment_model.findByIdAndUpdate(
+        { user_id: req.user.user._id, _id: req.body.appointment_id },
+        req.body, // Ensure req.body only contains fields you want to update
+        { new: true } // Return the updated document
       );
+      console.log("line 130", appointment);
       return apiResponse.successResponseWithData(
         res,
         "Appointment updated successfully",
@@ -177,19 +183,85 @@ exports.get_appointment_list = [
   login_validator,
   async (req, res) => {
     try {
-      const appointment = await appointment_controllers.find({
-        user_id: req.user._id,
+      console.log("line 166", req.user.user._id);
+      const appointment = await appointment_model.find({
+        user_id: req.user.user._id,
       });
+      console.log("line 169", appointment);
       return apiResponse.successResponseWithData(
         res,
         "Appointment list",
         appointment
       );
     } catch (err) {
+      console.log("line 177", err.messsage);
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
         err.messsage
+      );
+    }
+  },
+];
+
+//upcoming appointment
+exports.upcoming_appointment = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const currentDate = new Date();
+
+      const upcomingAppointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date: { $gte: currentDate }, // Filter appointments with appointment_date greater than or equal to current date
+      });
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Upcoming appointments",
+        upcomingAppointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Todays appointment list API
+ */
+exports.todays_appointment = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0); // Set time to start of the day
+
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999); // Set time to end of the day
+
+      const todaysAppointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date: {
+          $gte: startOfToday,
+          $lte: endOfToday,
+        },
+      });
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Todays appointments",
+        todaysAppointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
       );
     }
   },

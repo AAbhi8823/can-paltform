@@ -56,7 +56,8 @@ exports.validatePin = (pin) => {
 
 //Validation regex for time and date
 exports.validateDateTime = (dateTime) => {
-  const dateTimeRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?$/;
+  const dateTimeRegex = /^\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}Z$/;
+  console.log(dateTimeRegex.test(dateTime))
   return dateTimeRegex.test(dateTime);
 }
 

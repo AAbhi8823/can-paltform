@@ -10,16 +10,21 @@ router.get('/get-my-story-list', mystory_controller.get_my_story_list);
 router.post('/like-story', mystory_controller.like_story);
 //get likes of a story API
 router.get('/get-likes-list', mystory_controller.get_likes);
+router.get('/most-liked-story', mystory_controller.most_liked_story);
 
 
-
-
+// SAVE STORY ROUTES
 const saved_mystory_controller = require('../controllers/saved.mystory.controllers');
 
 //Routes
 router.post('/add-save-story', saved_mystory_controller.save_mystory);
-router.post('/unsave-story', saved_mystory_controller.unsave_mystory);
+//router.post('/unsave-story', saved_mystory_controller.unsave_mystory);
 router.get('/get-saved-stories', saved_mystory_controller.get_saved_mystories);
+router.get('/get-saved-story/:saved_story_id', saved_mystory_controller.get_saved_mystory_by_id);
+
+router.delete("/delete-story/:story_id", mystory_controller.delete_story);
+
+
 
 
 

@@ -21,8 +21,8 @@ const healthcardSchema = new Schema(
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       required: true,
     },
-    height: { type: String, required: true },
-    weight: { type: String, required: true },
+    height: { type: String, required: false },
+    weight: { type: String, required: false },
     cancer_type: {
       type: String,
       enum: [
@@ -72,18 +72,18 @@ const healthcardSchema = new Schema(
         // relation:{type:String,required:false}
       },
     ],
-    document_attached: [
-      {
-        document_name: {
-          type: String,
-          required: false,
-        },
-        doc_url:{
-            type: String,
-            required: false,
-        }
-      },
-    ],
+    adhaar_card: {
+      type: String,
+      required: false,
+    },
+    fit_to_fly_certificate: {
+      type: String,
+      required: false,
+    },
+    biopsy_certificate: {
+      type: String,
+      required: false,
+    },
   },
 
   { timestamps: true }

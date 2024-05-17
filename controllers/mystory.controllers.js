@@ -4,7 +4,7 @@
 
 const mystory_model = require("../models/mystory.model");
 const user_model = require("../models/user.model");
-//const comment_model = require("../models/comment.model");
+const comment_model = require("../models/comments.model");
 const { validationResult } = require("express-validator");
 const apiResponse = require("../response/apiResponse");
 const login_validator =
@@ -13,6 +13,7 @@ const profilePin_validator =
   require("../middlewares/profile.pin.auth.middleware").profilePinAuthenticate;
 const awsS3 = require("../helpers/aws.s3");
 //const { sendOTP } = require("../helpers/helpers");
+const mystory_save_model = require("../models/saved.mystory.model");
 
 const multer = require("multer");
 
@@ -193,6 +194,104 @@ exports.get_likes = [
     }
   }
 ];
+/**
+ * Most Liked story api
+ * in this api user will be able to see the most liked story/post of the user
+ * 
+ */
+exports.most_liked_story = [
+  login_validator,
+  async (req, res) => {
+    try {
+      let user_id = req.user.user._id;
+      const mystory = await mystory_model.find({user_id:user_id}).sort({ likes: -1 }).limit(1);
+      return apiResponse.successResponseWithData(
+        res,
+        "Most Liked Story",
+        mystory
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Delete story api
+ * in this api user will be able to delete their own story
+ * 
+ */
+exports.delete_story = [
+  login_validator,
+  async (req, res) => {
+    try {
+      console.log("line 191", req.param.story_id);
+      const story = await mystory_model.findByIdAndDelete(req.params.story_id);
+      if (!story) {
+        return apiResponse.notFoundResponse(res, "Story not found");
+      }
+      //delete the media files from s3 bucket
+      //await awsS3.delete_files(story.media_files);
+      
+      //detete the comments of the story
+      await comment_model.deleteMany({story_id: story._id
+      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Story deleted successfully",
+        story
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Save story api
+ * in this api user will be able to save the story
+ */
+exports.save_story = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const { story_id } = req.body;
+      const mystory = await mystory_model.findById(story_id);
+      if (!mystory) {
+        return apiResponse.notFoundResponse(res, "Story not found");
+      }
+      const user = await user_model.findById(req.user.user._id);
+      if (!user) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+      const saved_mystory = new mystory_save_model({
+        story_id: story_id,
+        user_id: req.user.user._id,
+      });
+      const saved = await saved_mystory.save();
+      return apiResponse.successResponseWithData(
+        res,
+        "Story Saved",
+        saved
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+ 
 
 
 //add comment to story

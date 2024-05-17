@@ -28,7 +28,7 @@ app.use("/profilelist",profileListRoutes)
 app.use("/mystory",mystoryRoutes)
 app.use("/meeting",meetingRoutes)
 app.use("/comments",commentsRoutes)
-//app.use("/save",saveMystoryroutes)
+//app.use("/savedstory",saveMystoryroutes)
 
 
 module.exports=app

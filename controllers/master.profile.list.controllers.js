@@ -9,7 +9,6 @@ const apiResponse = require("../response/apiResponse");
 const aws = require("../helpers/aws.s3");
 const multer = require("multer");
 
-
 //multer storage
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -34,14 +33,11 @@ exports.add_master_profile_list = [
         req.file.originalname
       );
       const master_Profile_List = new master_profile_list_controller({
-      
-          role: req.body.role,
-          profile_description: req.body. profile_description,
-          profile_image: profile_image_url,
-        
-        
+        role: req.body.role,
+        profile_description: req.body.profile_description,
+        profile_image: profile_image_url,
       });
-        
+
       const master_profile_list_saved = await master_Profile_List.save();
       return apiResponse.successResponseWithData(
         res,

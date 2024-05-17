@@ -105,11 +105,11 @@ exports.add_medicine = [
 
 exports.update_medicine = [
   login_validator,
-  check("medicine_name").notEmpty().withMessage("Medicine name can not be empty"),
-  check("medicine_type").notEmpty().withMessage("Medicine type can not be empty"),
-  check("medicine_dosage")
-    .notEmpty()
-    .withMessage("Medicine dosage  can not be empty"),
+  // check("medicine_name").notEmpty().withMessage("Medicine name can not be empty"),
+  // check("medicine_type").notEmpty().withMessage("Medicine type can not be empty"),
+  // check("medicine_dosage")
+  //   .notEmpty()
+  //   .withMessage("Medicine dosage  can not be empty"),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -133,7 +133,8 @@ exports.update_medicine = [
       } = req.body;
 
       const medicine = await medicine_controller.findOneAndUpdate(
-        { _id: req.body.medicine_id },
+
+        { _id: req.body.medicine_id , user_id: req.user.user._id},
         {
           $set: {
             user_id: req.user.user._id,
@@ -284,31 +285,30 @@ exports.get_medicine_details = [
   },
 ];
 
-//Get Medicine list 
+//Get Medicine list
 
 exports.get_medicine_list = [
-    login_validator,
-    async (req, res) => {
-        try {
-        const medicine = await medicine_controller.find({
-            user_id: req.user.user._id,
-        });
-        if (!medicine) {
-            return apiResponse.validationErrorWithData(res, "Medicine not found");
-        }
-        return apiResponse.successResponseWithData(
-            res,
-            "Medicine list",
-            medicine
-        );
-        } catch (err) {
-        console.log(err);
-        return apiResponse.serverErrorResponse(
-            res,
-            "Server Error...!",
-            err.message
-        );
-        }
-    },
-    ];
-
+  login_validator,
+  async (req, res) => {
+    try {
+      const medicine = await medicine_controller.find({
+        user_id: req.user.user._id,
+      });
+      if (!medicine) {
+        return apiResponse.validationErrorWithData(res, "Medicine not found");
+      }
+      return apiResponse.successResponseWithData(
+        res,
+        "Medicine list",
+        medicine
+      );
+    } catch (err) {
+      console.log(err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
