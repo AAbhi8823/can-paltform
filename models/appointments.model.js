@@ -18,7 +18,7 @@ const appointmentSchema = new Schema(
     appointment_day: {
       type: String,
       enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      required: true,
+      required: false,
     },
     appointment_time: [
       {
