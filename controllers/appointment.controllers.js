@@ -132,10 +132,10 @@ exports.update_appointment = [
           errors.array()
         );
       }
-      console.log("line 123", req.body);  
-      
+      console.log("line 123", req.body);
+
       const appointment = await appointment_model.findByIdAndUpdate(
-        {  user_id: req.user.user._id ,  _id: req.body.appointment_id  },
+        { user_id: req.user.user._id, _id: req.body.appointment_id },
         req.body, // Ensure req.body only contains fields you want to update
         { new: true } // Return the updated document
       );
@@ -146,7 +146,6 @@ exports.update_appointment = [
         appointment
       );
     } catch (err) {
-    
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
@@ -211,7 +210,7 @@ exports.upcoming_appointment = [
   async (req, res) => {
     try {
       const currentDate = new Date();
-     
+
       const upcomingAppointments = await appointment_model.find({
         user_id: req.user.user._id,
         appointment_date: { $gte: currentDate }, // Filter appointments with appointment_date greater than or equal to current date
@@ -221,6 +220,42 @@ exports.upcoming_appointment = [
         res,
         "Upcoming appointments",
         upcomingAppointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Todays appointment list API
+ */
+exports.todays_appointment = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0); // Set time to start of the day
+
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999); // Set time to end of the day
+
+      const todaysAppointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date: {
+          $gte: startOfToday,
+          $lte: endOfToday,
+        },
+      });
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Todays appointments",
+        todaysAppointments
       );
     } catch (err) {
       return apiResponse.serverErrorResponse(

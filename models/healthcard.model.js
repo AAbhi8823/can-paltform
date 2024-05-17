@@ -72,18 +72,18 @@ const healthcardSchema = new Schema(
         // relation:{type:String,required:false}
       },
     ],
-    document_attached: 
-      {
-        document_name: {
-          type: String,
-          required: false,
-        },
-        document_url:{
-            type: String,
-            required: false,
-        }
-      },
-    
+    adhaar_card: {
+      type: String,
+      required: false,
+    },
+    fit_to_fly_certificate: {
+      type: String,
+      required: false,
+    },
+    biopsy_certificate: {
+      type: String,
+      required: false,
+    },
   },
 
   { timestamps: true }

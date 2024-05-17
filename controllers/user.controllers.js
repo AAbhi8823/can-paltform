@@ -933,12 +933,13 @@ exports.login_user = [
       }
 
       //console.log("line 536", user_found.user_profile[0].CANID);
-      //console.log("line 536",user_found.user_profile)
+      console.log("line 536",user_found, user_found.full_name)
       const payload = {
         user: {
           _id: user_found._id.toString(),
 
           CANID: user_found.CANID,
+          full_name: user_found.full_name,
           phone_number: user_found.phone_number,
           user_profile: user_found.user_profile,
         },

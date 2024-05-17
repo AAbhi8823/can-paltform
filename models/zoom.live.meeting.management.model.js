@@ -9,9 +9,11 @@ const Schema = mongoose.Schema;
 const meetingSchema = new mongoose.Schema(
   {
     host_name: { type: String, required: true },
+    topic: { type: String, required: true },
     host_profile_tag: { type: String, required: true },
     description: { type: String, required: true },
     scheduled_time: { type: Date, required: true },
+    start_url: { type: String, required: true },
     join_url: { type: String, required: true },
     isAnonymousJoinEnabled: { type: Boolean, default: true },
     categories: [{ type: String }], // You can define multiple categories for a meeting

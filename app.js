@@ -1,4 +1,3 @@
-
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -8,7 +7,6 @@ const apiRoutes = require("./routes/api");
 
 // const cluster = require("cluster");
 // const numCPUs = require("os").cpus().length;
-
 
 // const config = require('./config');
 const path = require("path");
@@ -20,11 +18,9 @@ const flash = require("connect-flash"); //for flash messages
 //const session = require('express-session');
 //const cookieParser = require('cookie-parser');
 
-
-
-const db_connection=require("./database/db.configurations").connectDB
-const PORT=process.env.PORT || 3000
-const dotenv=require('dotenv')
+const db_connection = require("./database/db.configurations").connectDB;
+const PORT = process.env.PORT || 3000;
+const dotenv = require("dotenv");
 dotenv.config();
 
 //-------------------
@@ -32,10 +28,6 @@ dotenv.config();
 //-------------------
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-
-
-
 
 //-------------------
 //connect to database
@@ -67,7 +59,12 @@ app.use(compression());
 //define routes
 app.use("/api/v1", apiRoutes);
 app.use("*", (req, res) => {
-  res.status(404).json([{status:false, message: `The URL ${req.originalUrl} is  not on this server` }]);
+  res.status(404).json([
+    {
+      status: false,
+      message: `The URL ${req.originalUrl} is  not on this server`,
+    },
+  ]);
 });
 
 //error handling
@@ -91,11 +88,15 @@ app.use("*", (req, res) => {
 //   });
 // }
 
-
-//console.log("line 80 WORKER PID", process.pid); 
-
+//console.log("line 80 WORKER PID", process.pid);
 
 //start server
+
 app.listen(`${PORT}`, () => {
-  console.log(`Server started on port ${PORT}`);
+    console.log(
+  `  -----------------------------------------------
+   Server running at http://localhost:${PORT}
+   Server Started at ${new Date()},
+  -----------------------------------------------`
+  );
 });

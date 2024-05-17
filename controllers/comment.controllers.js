@@ -24,7 +24,9 @@ const login_validator =
         if (!story) {
           return res.status(404).json({ msg: "Story not found" });
         }
+        console.log("line 27",req.user.user.full_name);
         const new_comment = new comment_model({
+          name: req.user.user.full_name,
           comment,
           user_id,
           CANID,

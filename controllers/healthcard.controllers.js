@@ -11,6 +11,7 @@ const { single_file_upload } = require("../helpers/aws.s3");
 const awsS3 = require("../helpers/aws.s3");
 
 const apiResponse = require("../response/apiResponse");
+const validator = require("../validators/validator");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -28,10 +29,15 @@ dotenv.config();
  */
 
 const multer = require("multer");
+const { prototype } = require("aws-sdk/clients/acm");
 const upload = multer({ storage: multer.memoryStorage() });
 exports.add_healthcard = [
   login_validator,
-  upload.fields([{ name: "document_attached", maxCount: 10 }]),
+  upload.fields([
+    { name: "adhaar_card", maxCount: 1 },
+    { name: "fit_to_fly_certificate", maxCount: 1 },
+    { name: "biopsy_certificate", maxCount: 1 },
+  ]),
 
   async (req, res) => {
     try {
@@ -42,7 +48,7 @@ exports.add_healthcard = [
         });
       }
       console.log("line 45", req.body);
-      const {
+      let {
         name,
         gender,
         date_of_birth,
@@ -55,9 +61,14 @@ exports.add_healthcard = [
         presiding_doctor,
         hospital_details_primary,
         hospital_details,
-        emergency_conatct,
-        document_attached,
+        emergency_contact,
+        adhaar_card,
+        fit_to_fly_certificate,
+        biopsy_certificate,
       } = req.body;
+
+      //parse emergency_contact
+       emergency_contact=JSON.parse(emergency_contact)
 
       // Uncomment the following lines if you have user authentication and want to get user_id
       const user_id = req.user.user._id;
@@ -68,46 +79,93 @@ exports.add_healthcard = [
           message: "User not found",
         });
       }
+      //validate the phone number of emergency contact which in an arra
+      for (let i = 0; i < emergency_contact.length; i++) {
+        if (!validator.validatePhoneNumber(emergency_contact[i].phone)) {
+          return res.status(400).json({
+            message: "Invalid phone number",
+          });
+        }
+      }
+
+
       //uploading files to s3 bucket and getting the url of the file and storing it in the database
       let files = req.files;
-     
-      if (!files || files.length == 0) {
-        return res.status(400).send({ status: false, msg: "No filse found" });
-      }
-      let documents_attached = files.document_attached.map((file) => ({
-        originalname: file.originalname,
-        buffer: file.buffer,
-      }));
-     console.log("line 32", documents_attached);
 
-      const documents_attached_url = await awsS3.single_file_upload(
-        documents_attached
-      );
-      console.log("line 68", documents_attached_url);
+      if (!files || files.length == 0) {
+        return res.status(400).send({ status: false, msg: "No files found" });
+      }
+      if (files.adhaar_card) {
+        let adhaar_card = files.adhaar_card.map((file) => ({
+          originalname: file.originalname,
+          buffer: file.buffer,
+        }));
+        console.log("line 86", adhaar_card);
+
+        var  adhaar_card_url = await awsS3.single_file_upload(adhaar_card);
+        // console.log("line 89", adhaar_card_url);
+      }
+      if (files.fit_to_fly_certificate) {
+        let fit_to_fly_certificate = files.fit_to_fly_certificate.map(
+          (file) => ({
+            originalname: file.originalname,
+            buffer: file.buffer,
+          })
+        );
+        // console.log("line 96", fit_to_fly_certificate);
+
+        var  fit_to_fly_certificate_url = await awsS3.single_file_upload(
+          fit_to_fly_certificate
+        );
+        // console.log("line 101", fit_to_fly_certificate_url);
+      }
+      if (files.biopsy_certificate) {
+        let biopsy_certificate = files.biopsy_certificate.map((file) => ({
+          originalname: file.originalname,
+          buffer: file.buffer,
+        }));
+        // console.log("line 110", biopsy_certificate);
+
+        var biopsy_certificate_url = await awsS3.single_file_upload(
+          biopsy_certificate
+        );
+        // console.log("line 115", biopsy_certificate_url);
+      }
+
+      console.log("line 120",typeof emergency_contact);
+//  let parsedEmergencyContact ;
+//       if (typeof emergency_contact === 'string') {
+//         try {
+//             parsedEmergencyContact = JSON.parse(emergency_contact);
+//             console.log("line 125",typeof parsedEmergencyContact);
+//         } catch (e) {
+//             console.log("line 125", e);
+//         }
+//     }
 
       // Create health card
-      const healthcard = new healthcard_model({
-        user_id,
-         CANID: req.user.user.CANID,
-        name,
-        gender,
-        date_of_birth,
-        blood_group,
-        height,
-        weight,
-        cancer_type,
-        cancer_stage,
-        current_treatment,
-        presiding_doctor,
-        hospital_details_primary,
-        hospital_details,
-        emergency_conatct,
-        document_attached: {
-            document_name: documents_attached[0].originalname,
-            document_url: documents_attached_url,
-        }
-      
-      });
+    // Create health card
+const healthcard = new healthcard_model({
+  user_id,
+  CANID: req.user.user.CANID,
+  name,
+  gender,
+  date_of_birth,
+  blood_group,
+  height,
+  weight,
+  cancer_type,
+  cancer_stage,
+  current_treatment,
+  presiding_doctor,
+  hospital_details_primary,
+  hospital_details,
+  emergency_contact:emergency_contact, // No need to parse emergency_contact as JSON
+  adhaar_card: adhaar_card_url,
+  fit_to_fly_certificate: fit_to_fly_certificate_url,
+  biopsy_certificate: biopsy_certificate_url,
+});
+
 
       const healthcard_saved = await healthcard.save();
       return apiResponse.successResponseWithData(
@@ -117,7 +175,9 @@ exports.add_healthcard = [
       );
     } catch (err) {
       return res.status(500).json({
-        message: err.message,
+        status: false,
+        message: "Server error...",
+        error: err.message,
       });
     }
   },
@@ -165,7 +225,7 @@ exports.update_healthcard = [
           errors: errors.array(),
         });
       }
-      
+
       // Extract uploaded file details
       const file = req.file;
       if (!file) {
@@ -214,7 +274,7 @@ async function updateHealthCard(req, res, document_attached_url) {
         document_url: document_attached_url,
       };
     }
-    if(!req.body.healthcard_id){
+    if (!req.body.healthcard_id) {
       return res.status(400).json({
         message: "Health card ID is required",
       });

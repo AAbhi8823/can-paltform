@@ -8,7 +8,7 @@ const ObjectId = Schema.ObjectId;
 
 const savedMystorySchema = new Schema(
   {
-    mystory_id: {
+    daved_story_id: {
       type: ObjectId,
       ref: "MyStory",
       required: true,
