@@ -266,3 +266,31 @@ exports.todays_appointment = [
     }
   },
 ];
+
+/**
+ * Get appointment by date API
+ */
+exports.get_appointment_by_date = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const { appointment_date } = req.body;
+      const appointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date,
+      });
+
+      return apiResponse.successResponseWithData(
+        res,
+       `Appointments on ${appointment_date}`,
+        appointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
