@@ -274,12 +274,12 @@ exports.get_appointment_by_date = [
   login_validator,
   async (req, res) => {
     try {
-      const { appointment_date } = req.body;
+      const  appointment_date  = req.params.appointment_date;
+      console.log("line 238", appointment_date);
       const appointments = await appointment_model.find({
         user_id: req.user.user._id,
-        appointment_date,
+        appointment_date: appointment_date,
       });
-
       return apiResponse.successResponseWithData(
         res,
        `Appointments on ${appointment_date}`,
