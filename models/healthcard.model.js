@@ -42,7 +42,7 @@ const healthcardSchema = new Schema(
 
     cancer_stage: {
       type: String,
-      enum: ["Stage 0", "Stage IA", "Stage IB", "Stage IB", "Stage IV"],
+      enum: ["Stage 0", "Stage IA", "Stage IB", "Stage IIB", "Stage IV"],
       required: true,
     },
 
