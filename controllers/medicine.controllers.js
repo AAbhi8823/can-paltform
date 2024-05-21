@@ -1,7 +1,7 @@
 /**
  * Medicine Controller
  */
-const medicine_controller = require("../models/medicines.models");
+const medicine_model = require("../models/medicines.models");
 const apiResponse = require("../response/apiResponse");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
@@ -32,60 +32,68 @@ exports.add_medicine = [
 
         isReminderSet,
         add_note,
-      } = req.body;
-      if (!medicine_name) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Medicine name is required"
-        );
-      }
-      if (!medicine_type) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Medicine type is required"
-        );
-      }
-      if (!medicine_dosage) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Medicine dosage is required"
-        );
-      }
+      } = req.body
+      console.log("line 36",medicine_name,req.body)
+      // if (!medicine_name) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Medicine name is required"
+      //   );
+      // }
+      // if (!medicine_type) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Medicine type is required"
+      //   );
+      // }
+      // if (!medicine_dosage) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Medicine dosage is required"
+      //   );
+      // }
 
-      if (!medicine_start_date) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Medicine start date is required"
-        );
-      }
-      if (!medicine_stop_date) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Medicine end date is required"
-        );
-      }
+      // if (!medicine_start_date) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Medicine start date is required"
+      //   );
+      // }
+      // if (!medicine_stop_date) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Medicine end date is required"
+      //   );
+      //}
       // if(!remarks){
       //     return apiResponse.validationErrorWithData(res,"Remarks is required")
       // }
-      const medicine = new medicine_controller({
-        user_id: req.user.user._id,
-        CANID: req.user.user.CANID,
-        medicine_name,
-        medicine_type,
-        medicine_dosage,
+      const { medicines } = req.body;
 
-        meal,
-        time_for_reminder,
-        medicine_start_date,
-        medicine_stop_date,
-        isReminderSet,
-        add_note,
+      const user_id = req.user.user._id;
+      const CANID = req.user.user.CANID;
+
+      // Check if the user already has a medicine record
+      let medicineRecord = await medicine_model.findOne({ user_id });
+
+      if (!medicineRecord) {
+        // Create a new medicine record if it doesn't exist
+        medicineRecord = new medicine_model({ user_id, medicines: [] });
+      }
+
+      // Append the new medicines to the existing list
+      medicines.forEach((medicine) => {
+        medicineRecord.medicines.push({
+          CANID,
+          ...medicine,
+        });
       });
-      await medicine.save();
+      // save the record
+ let  medicine_saved= await medicineRecord.save();
       return apiResponse.successResponseWithData(
         res,
         "Medicine added successfully",
-        medicine
+        medicine_saved
       );
     } catch (err) {
       console.log(err);
@@ -133,8 +141,7 @@ exports.update_medicine = [
       } = req.body;
 
       const medicine = await medicine_controller.findOneAndUpdate(
-
-        { _id: req.body.medicine_id , user_id: req.user.user._id},
+        { _id: req.body.medicine_id, user_id: req.user.user._id },
         {
           $set: {
             user_id: req.user.user._id,
