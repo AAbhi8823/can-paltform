@@ -67,27 +67,28 @@ exports.add_healthcard = [
         biopsy_certificate,
       } = req.body;
 
-      //parse emergency_contact
-       emergency_contact=JSON.parse(emergency_contact)
-
-      // Uncomment the following lines if you have user authentication and want to get user_id
       const user_id = req.user.user._id;
-      console.log("line 58", user_id);
-      const user = await user_model.findOne({ _id: user_id });
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
-        });
-      }
-      //validate the phone number of emergency contact which in an arra
-      for (let i = 0; i < emergency_contact.length; i++) {
-        if (!validator.validatePhoneNumber(emergency_contact[i].phone)) {
-          return res.status(400).json({
-            message: "Invalid phone number",
+      if (emergency_contact) {
+        //parse emergency_contact
+        emergency_contact = JSON.parse(emergency_contact);
+        // Uncomment the following lines if you have user authentication and want to get user_id
+
+        console.log("line 58", user_id);
+        const user = await user_model.findOne({ _id: user_id });
+        if (!user) {
+          return res.status(404).json({
+            message: "User not found",
           });
         }
+        //validate the phone number of emergency contact which in an arra
+        for (let i = 0; i < emergency_contact.length; i++) {
+          if (!validator.validatePhoneNumber(emergency_contact[i].phone)) {
+            return res.status(400).json({
+              message: "Invalid phone number",
+            });
+          }
+        }
       }
-
 
       //uploading files to s3 bucket and getting the url of the file and storing it in the database
       let files = req.files;
@@ -102,7 +103,7 @@ exports.add_healthcard = [
         }));
         console.log("line 86", adhaar_card);
 
-        var  adhaar_card_url = await awsS3.single_file_upload(adhaar_card);
+        var adhaar_card_url = await awsS3.single_file_upload(adhaar_card);
         // console.log("line 89", adhaar_card_url);
       }
       if (files.fit_to_fly_certificate) {
@@ -114,7 +115,7 @@ exports.add_healthcard = [
         );
         // console.log("line 96", fit_to_fly_certificate);
 
-        var  fit_to_fly_certificate_url = await awsS3.single_file_upload(
+        var fit_to_fly_certificate_url = await awsS3.single_file_upload(
           fit_to_fly_certificate
         );
         // console.log("line 101", fit_to_fly_certificate_url);
@@ -132,40 +133,37 @@ exports.add_healthcard = [
         // console.log("line 115", biopsy_certificate_url);
       }
 
-      console.log("line 120",typeof emergency_contact);
-//  let parsedEmergencyContact ;
-//       if (typeof emergency_contact === 'string') {
-//         try {
-//             parsedEmergencyContact = JSON.parse(emergency_contact);
-//             console.log("line 125",typeof parsedEmergencyContact);
-//         } catch (e) {
-//             console.log("line 125", e);
-//         }
-//     }
+      //  let parsedEmergencyContact ;
+      //       if (typeof emergency_contact === 'string') {
+      //         try {
+      //             parsedEmergencyContact = JSON.parse(emergency_contact);
+      //             console.log("line 125",typeof parsedEmergencyContact);
+      //         } catch (e) {
+      //             console.log("line 125", e);
+      //         }
+      //     }
 
       // Create health card
-    // Create health card
-const healthcard = new healthcard_model({
-  user_id,
-  CANID: req.user.user.CANID,
-  name,
-  gender,
-  date_of_birth,
-  blood_group,
-  height,
-  weight,
-  cancer_type,
-  cancer_stage,
-  current_treatment,
-  presiding_doctor,
-  hospital_details_primary,
-  hospital_details,
-  emergency_contact:emergency_contact, // No need to parse emergency_contact as JSON
-  adhaar_card: adhaar_card_url,
-  fit_to_fly_certificate: fit_to_fly_certificate_url,
-  biopsy_certificate: biopsy_certificate_url,
-});
-
+      const healthcard = new healthcard_model({
+        user_id,
+        CANID: req.user.user.CANID,
+        name,
+        gender,
+        date_of_birth,
+        blood_group,
+        height,
+        weight,
+        cancer_type,
+        cancer_stage,
+        current_treatment,
+        presiding_doctor,
+        hospital_details_primary,
+        hospital_details,
+        emergency_contact: emergency_contact, // No need to parse emergency_contact as JSON
+        adhaar_card: adhaar_card_url,
+        fit_to_fly_certificate: fit_to_fly_certificate_url,
+        biopsy_certificate: biopsy_certificate_url,
+      });
 
       const healthcard_saved = await healthcard.save();
       return apiResponse.successResponseWithData(
