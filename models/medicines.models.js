@@ -14,13 +14,13 @@ const medicineSchema = new Schema(
         medicine_name: { type: String, required: false },
         medicine_type: { 
           type: String,
-          enum: ["Tablet", "Capsule", "Syrup", "Injection", "Other"],
+          enum: ["Oncology","Gastrology","Neurology"],
           required: false,
         },
         medicine_dosage: { type: String, required: true },
         meal: { 
           type: String,
-          enum: ["Before Meal", "After Meal", "With Meal", "Empty Stomach"],
+          enum: ["Before Breakfast", "After Breakfast", "Before Lunch", "After Lunch", "Before Dinner", "After Dinner", ],
           required: true,
         },
         time_for_reminder: { type: String, required: false },
