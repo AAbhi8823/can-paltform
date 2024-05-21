@@ -21,9 +21,9 @@ const medicineSchema = new Schema(
       enum: ["Before Meal", "After Meal", "With Meal", "Empty Stomach"],
       required: true,
      },
-    time_for_reminder: { type: String, required: true },
-    medicine_start_date: { type: Date, required: true },
-    medicine_stop_date: { type: Date, required: true },
+    time_for_reminder: { type: String, required: false },
+    medicine_start_date: { type: Date, required: false },
+    medicine_stop_date: { type: Date, required: false },
     
     isReminderSet: { type: Boolean, default: false },
 
