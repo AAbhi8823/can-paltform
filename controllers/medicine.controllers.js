@@ -32,8 +32,8 @@ exports.add_medicine = [
 
         isReminderSet,
         add_note,
-      } = req.body
-      console.log("line 36",medicine_name,req.body)
+      } = req.body;
+      console.log("line 36", medicine_name, req.body);
       // if (!medicine_name) {
       //   return apiResponse.validationErrorWithData(
       //     res,
@@ -74,22 +74,22 @@ exports.add_medicine = [
       const CANID = req.user.user.CANID;
 
       // Check if the user already has a medicine record
-      let medicineRecord = await medicine_model.findOne({ user_id });
+      let medicine_found = await medicine_model.findOne({ user_id });
 
-      if (!medicineRecord) {
+      if (!medicine_found) {
         // Create a new medicine record if it doesn't exist
-        medicineRecord = new medicine_model({ user_id, medicines: [] });
+        medicine_found = new medicine_model({ user_id, medicines: [] });
       }
 
       // Append the new medicines to the existing list
       medicines.forEach((medicine) => {
-        medicineRecord.medicines.push({
+        medicine_found.medicines.push({
           CANID,
           ...medicine,
         });
       });
       // save the record
- let  medicine_saved= await medicineRecord.save();
+      let medicine_saved = await medicine_found.save();
       return apiResponse.successResponseWithData(
         res,
         "Medicine added successfully",
