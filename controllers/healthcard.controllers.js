@@ -29,9 +29,7 @@ dotenv.config();
  */
 
 const multer = require("multer");
-const { prototype } = require("aws-sdk/clients/acm");
-const { error } = require("winston");
-const { Console } = require("winston/lib/winston/transports");
+
 const upload = multer({ storage: multer.memoryStorage() });
 exports.add_healthcard = [
   login_validator,
