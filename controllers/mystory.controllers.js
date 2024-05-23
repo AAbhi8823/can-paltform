@@ -77,6 +77,8 @@ exports.get_mystory_list = [
       // console.log("line 77",req.user.user._id)
       const mystory_list = await mystory_model.find({
         // user_id: req.user.user._id,
+      }).sort({
+        createdAt:-1
       });
       return apiResponse.successResponseWithData(
         res,
