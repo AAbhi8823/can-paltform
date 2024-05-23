@@ -8,8 +8,8 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema(
   {
     full_name: { type: String, required: true },
-    email: { type: String, required: false },
-    phone_number: { type: String, required: false },
+    email: { type: String, required: false, unique: true },
+    phone_number: { type: String, required: false, unique: true },
     gender: { type: String, required: true },
     date_of_birth: { type: Date, required: true },
     agreed_To_Terms: { type: Boolean, required: true, default: false },
@@ -43,7 +43,6 @@ const userSchema = new Schema(
       default: false,
     },
     profile_image: { type: String, required: false },
-
 
     resetPasswordToken: {
       type: String,
