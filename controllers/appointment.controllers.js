@@ -160,15 +160,26 @@ exports.delete_appointment = [
   login_validator,
   async (req, res) => {
     try {
-      const appointment = await appointment_controllers.findByIdAndDelete(
-        req.params.id
+      //check user authorization to delete the appointment
+     // console.log("line 150", req.user.user._id,req.params.appointment_id);
+      const appointment = await appointment_model.findOne({
+        user_id: req.user.user._id,
+        _id: req.params.appointment_id,
+      });
+      if (!appointment) {
+        return apiResponse.notFoundResponse(res, "Appointment not found");
+      }
+
+      const appointment_deleted = await appointment_model.findByIdAndDelete(
+        req.params.appointment_id
       );
       return apiResponse.successResponseWithData(
         res,
         "Appointment deleted successfully",
-        appointment
+       // appointment
       );
     } catch (err) {
+      console.log("line 152", err);
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",

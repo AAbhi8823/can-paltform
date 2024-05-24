@@ -11,6 +11,7 @@ router.post('/like-story', mystory_controller.like_story);
 //get likes of a story API
 router.get('/get-likes-list', mystory_controller.get_likes);
 router.get('/most-liked-story', mystory_controller.most_liked_story);
+router.delete('/delete-story/:story_id', mystory_controller.delete_story);
 
 
 // SAVE STORY ROUTES
