@@ -300,7 +300,7 @@ exports.get_medicine_details = [
 
 exports.get_medicine_details_by_date = [
   login_validator,
-  check("date").notEmpty().withMessage("Date can not be empty"),
+  check("medicine_date").notEmpty().withMessage("Date cannot be empty"),
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -312,20 +312,35 @@ exports.get_medicine_details_by_date = [
         );
       }
 
-      const medicine = await medicine_model({
-        user_id: req.user.user._id,
-       //fetch medicine details by date range start and stop date
-    // {$in: [{medicine_start_date: req.body.date},{medicine_stop_date: req.body.date]}
-
-      });
-      if (!medicine) {
-        return apiResponse.validationErrorWithData(res, "Medicine not found");
+      const medicineDate = new Date(req.params.medicine_date);
+      if (isNaN(medicineDate)) {
+        return apiResponse.validationErrorWithData(res, "Invalid date format");
       }
-      return apiResponse.successResponseWithData(
-        res,
-        "Medicine details",
-        medicine
-      );
+
+      const medicines = await medicine_model.find({
+        user_id: req.user.user._id,
+        "medicines": {
+          $elemMatch: {
+            medicine_start_date: { $lte: medicineDate },
+            medicine_stop_date: { $gte: medicineDate }
+          }
+        }
+      });
+
+      const filteredMedicines = medicines.map(med => {
+        return {
+          ...med._doc,
+          medicines: med.medicines.filter(medicine => 
+            medicine.medicine_start_date <= medicineDate && medicine.medicine_stop_date >= medicineDate
+          )
+        };
+      }).filter(med => med.medicines.length > 0);
+
+      if (filteredMedicines.length === 0) {
+        return apiResponse.notFoundResponse(res, "No medicines found for the given date");
+      }
+
+      return apiResponse.successResponseWithData(res, "Medicine details", filteredMedicines);
     } catch (err) {
       console.log(err);
       return apiResponse.serverErrorResponse(
