@@ -229,7 +229,7 @@ exports.get_medicine_list = [
   login_validator,
   async (req, res) => {
     try {
-      const medicine = await medicine_controller.find({
+      const medicine = await medicine_model.find({
         user_id: req.user.user._id,
       });
       if (!medicine) {
@@ -292,30 +292,3 @@ exports.get_medicine_details = [
   },
 ];
 
-//Get Medicine list
-
-exports.get_medicine_list = [
-  login_validator,
-  async (req, res) => {
-    try {
-      const medicine = await medicine_controller.find({
-        user_id: req.user.user._id,
-      });
-      if (!medicine) {
-        return apiResponse.validationErrorWithData(res, "Medicine not found");
-      }
-      return apiResponse.successResponseWithData(
-        res,
-        "Medicine list",
-        medicine
-      );
-    } catch (err) {
-      console.log(err);
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
-    }
-  },
-];
