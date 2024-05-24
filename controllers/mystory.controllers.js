@@ -75,11 +75,13 @@ exports.get_mystory_list = [
   async (req, res) => {
     try {
       // console.log("line 77",req.user.user._id)
-      const mystory_list = await mystory_model.find({
-        // user_id: req.user.user._id,
-      }).sort({
-        createdAt:-1
-      });
+      const mystory_list = await mystory_model
+        .find({
+          // user_id: req.user.user._id,
+        })
+        .sort({
+          createdAt: -1,
+        });
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
@@ -179,7 +181,7 @@ exports.get_likes = [
     try {
       const story_id = req.body.story_id;
       const mystory = await mystory_model.findById(story_id);
-      if(!mystory){
+      if (!mystory) {
         return apiResponse.notFoundResponse(res, "Story not found");
       }
       return apiResponse.successResponseWithData(
@@ -194,19 +196,22 @@ exports.get_likes = [
         err.message
       );
     }
-  }
+  },
 ];
 /**
  * Most Liked story api
  * in this api user will be able to see the most liked story/post of the user
- * 
+ *
  */
 exports.most_liked_story = [
   login_validator,
   async (req, res) => {
     try {
       let user_id = req.user.user._id;
-      const mystory = await mystory_model.find({user_id:user_id}).sort({ likes: -1 }).limit(1);
+      const mystory = await mystory_model
+        .find({ user_id: user_id })
+        .sort({ likes: -1 })
+        .limit(1);
       return apiResponse.successResponseWithData(
         res,
         "Most Liked Story",
@@ -227,16 +232,15 @@ exports.most_liked_story = [
  * in this api user will be able to delete their own story
  * When user delete the story, all the comments, likes, shares will be deleted
  * Also the media files will be deleted from the s3 bucket
- * 
+ *
  */
 exports.delete_story = [
   login_validator,
   async (req, res) => {
     try {
-      const story_id = req.params.story_id;
+      const {story_id} = req.params.story_id;
       const mystory = await mystory_model.findById(story_id);
-      if
-      (!mystory) {
+      if (!mystory) {
         return apiResponse.notFoundResponse(res, "Story not found");
       }
       //check if the user is the owner of the story
@@ -245,18 +249,16 @@ exports.delete_story = [
       }
       //delete the media files from the s3 bucket
       const media_files = mystory.media_files;
-      await awsS3.delete_file(media_files);
+      let deleted_media_files_from_s3 = await awsS3.delete_file(media_files);
+      console.log("line 249", deleted_media_files_from_s3);
       //delete the story
       const deleted = await mystory_model.findByIdAndDelete(story_id);
       return apiResponse.successResponseWithData(res, "Story Deleted", deleted);
     } catch (err) {
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
+      console.log("line 254", err);
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err);
     }
-  }
+  },
 ];
 
 /**
@@ -281,11 +283,7 @@ exports.save_story = [
         user_id: req.user.user._id,
       });
       const saved = await saved_mystory.save();
-      return apiResponse.successResponseWithData(
-        res,
-        "Story Saved",
-        saved
-      );
+      return apiResponse.successResponseWithData(res, "Story Saved", saved);
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
@@ -297,10 +295,8 @@ exports.save_story = [
 ];
 /**
  * Delete saved story api
- * 
+ *
  */
- 
-
 
 //add comment to story
 // exports.add_comment = [
@@ -315,4 +311,4 @@ exports.save_story = [
 //       const comment_data = {
 //         user_id: req.user.user._id,
 //         comment: comment,
-//       }; 
+//       };
