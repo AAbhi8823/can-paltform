@@ -225,28 +225,30 @@ exports.most_liked_story = [
 /**
  * Delete story api
  * in this api user will be able to delete their own story
+ * When user delete the story, all the comments, likes, shares will be deleted
+ * Also the media files will be deleted from the s3 bucket
  * 
  */
 exports.delete_story = [
   login_validator,
   async (req, res) => {
     try {
-      console.log("line 191", req.param.story_id);
-      const story = await mystory_model.findByIdAndDelete(req.params.story_id);
-      if (!story) {
+      const story_id = req.params.story_id;
+      const mystory = await mystory_model.findById(story_id);
+      if
+      (!mystory) {
         return apiResponse.notFoundResponse(res, "Story not found");
       }
-      //delete the media files from s3 bucket
-      //await awsS3.delete_files(story.media_files);
-      
-      //detete the comments of the story
-      await comment_model.deleteMany({story_id: story._id
-      });
-      return apiResponse.successResponseWithData(
-        res,
-        "Story deleted successfully",
-        story
-      );
+      //check if the user is the owner of the story
+      if (mystory.user_id.toString() !== req.user.user._id.toString()) {
+        return apiResponse.unauthorizedResponse(res, "Unauthorized user");
+      }
+      //delete the media files from the s3 bucket
+      const media_files = mystory.media_files;
+      await awsS3.delete_file(media_files);
+      //delete the story
+      const deleted = await mystory_model.findByIdAndDelete(story_id);
+      return apiResponse.successResponseWithData(res, "Story Deleted", deleted);
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
@@ -254,7 +256,7 @@ exports.delete_story = [
         err.message
       );
     }
-  },
+  }
 ];
 
 /**
@@ -293,6 +295,10 @@ exports.save_story = [
     }
   },
 ];
+/**
+ * Delete saved story api
+ * 
+ */
  
 
 

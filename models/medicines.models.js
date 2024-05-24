@@ -14,7 +14,7 @@ const medicineSchema = new Schema(
         medicine_name: { type: String, required: false },
         medicine_type: { 
           type: String,
-          enum: ["Oncology","Gastrology","Neurology"],
+         // enum: ["Oncology","Gastrology","Neurology"],
           required: false,
         },
         medicine_dosage: { type: String, required: true },
