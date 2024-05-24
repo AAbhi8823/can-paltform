@@ -292,3 +292,47 @@ exports.get_medicine_details = [
   },
 ];
 
+/**
+ * Get Medicine Details API
+ * in this api we will get the medicine details by date user will send the date and we will get the medicine details of that date
+ * 
+ */
+
+exports.get_medicine_details_by_date = [
+  login_validator,
+  check("date").notEmpty().withMessage("Date can not be empty"),
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          errors.array()
+        );
+      }
+
+      const medicine = await medicine_model({
+        user_id: req.user.user._id,
+       //fetch medicine details by date range start and stop date
+    // {$in: [{medicine_start_date: req.body.date},{medicine_stop_date: req.body.date]}
+
+      });
+      if (!medicine) {
+        return apiResponse.validationErrorWithData(res, "Medicine not found");
+      }
+      return apiResponse.successResponseWithData(
+        res,
+        "Medicine details",
+        medicine
+      );
+    } catch (err) {
+      console.log(err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];

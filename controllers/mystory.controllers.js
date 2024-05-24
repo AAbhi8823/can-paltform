@@ -238,35 +238,45 @@ exports.delete_story = [
   login_validator,
   async (req, res) => {
     try {
-      const  story_id= req.params.story_id;
+      const story_id = req.params.story_id;
       console.log("line 241", story_id);
-      const mystory = await mystory_model.findOne({_id:story_id});
+
+      const mystory = await mystory_model.findOne({ _id: story_id });
       if (!mystory) {
         return apiResponse.notFoundResponse(res, "Story not found");
       }
       console.log("line 245", mystory);
-      //check if the user is the owner of the story
+
+      // Check if the user is the owner of the story
       if (mystory.user_id.toString() !== req.user.user._id.toString()) {
         return apiResponse.unauthorizedResponse(res, "Unauthorized user");
       }
-      //delete the media files from the s3 bucket
+
+      // Delete the media files from the S3 bucket
       // const media_files = mystory.media_files;
-      // let deleted_media_files_from_s3 = await awsS3.delete_file(media_files);
-      // console.log("line 249", deleted_media_files_from_s3);
-      //delete the story
+      // for (const file of media_files) {
+      //   const deleteParams = {
+      //     Bucket: 'your-bucket-name', // Replace with your bucket name
+      //     Key: file.key, // Ensure the key is correct
+      //   };
+      //   console.log("Deleting file: ", deleteParams);
+      //   await awsS3.delete_file(deleteParams);
+      // }
+      // console.log("line 249", "All media files deleted");
+
+      // Delete the story
       const deleted = await mystory_model.findByIdAndDelete(story_id);
-      //delete the comments of the story
-       const deleted_comments = await comment_model.deleteMany({
-          story_id: story_id,
-        });
-      return apiResponse.successResponseWithData(res, "Story Deleted", deleted);
+
+      // Delete the comments of the story
+      const deleted_comments = await comment_model.deleteMany({ story_id: story_id });
+
+      return apiResponse.successResponseWithData(res, "Story Deleted", { deleted, deleted_comments });
     } catch (err) {
       console.log("line 254", err);
       return apiResponse.serverErrorResponse(res, "Server Error...!", err);
     }
   },
 ];
-
 /**
  * Save story api
  * in this api user will be able to save the story

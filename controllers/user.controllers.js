@@ -1779,3 +1779,54 @@ exports.block_user_profile = [
     }
   },
 ];
+
+
+/**
+ * Get user profile API
+ * This api will be used to get the user profile
+ */
+
+exports.get_user_profile = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the user from user_profile or from user_profile
+      const user_found = await user_model.findOne({
+        $or: [
+          { _id: req.user.user._id },
+
+          // {
+          //   "user_profile._id": req.user.user._id,
+          // },
+        ],
+      })
+
+      // Check if the user exists
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      let user_profile;
+      if (user_found._id.toString() === req.user.user._id) {
+        user_profile = user_found;
+      } else {
+        user_profile = user_found.user_profile.find(
+          (profile) => profile._id === req.user.user._id
+        );
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User profile",
+        user_profile
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
