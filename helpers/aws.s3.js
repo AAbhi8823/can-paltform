@@ -68,6 +68,24 @@ exports.multiple_file_upload = async (files) => {
   });
 };
 
+//FUNCTION TO DELETE A FILE FROM AWS S3 BUCKET
+exports.delete_file = async (key) => {
+  return new Promise(function (resolve, reject) {
+    let s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+    var deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+    };
+    s3.deleteObject(deleteParams, function (err, data) {
+      if (err) {
+        console.log("Error", err);
+        return reject({ error: err.message });
+      }
+      return resolve(data);
+    });
+  });
+};
+
 // //FUNCTION TO UPLOAD MULTIPLE FILES TO AWS S3 BUCKET
 // const multiple_file_upload = async (files) => {
 //   return new Promise(function (resolve, reject) {

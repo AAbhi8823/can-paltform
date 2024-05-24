@@ -164,23 +164,21 @@ exports.add_user = [
         // Check if user already exists
 
         const user_found = await user_model.findOne({
-          $and: [
+          $or: [
             {
               phone_number: phone_number,
             },
             {
               email: email,
             },
+            
           ],
         });
 
+
+
         console.log("line 172", user_found);
-        if (user_found) {
-          return res.status(400).json({
-            status: false,
-            msg: ` ${phone_number} This phone number is already registerd.ls`,
-          });
-        }
+       
         // if(user_found.email){
         //   return res.status(409).json({
         //     status:false,
@@ -367,6 +365,9 @@ exports.add_user = [
       // if otp is not empty
     } catch (err) {
       console.log(err);
+      if (err.code === 11000) { // Duplicate key error
+        return res.status(400).json({ error: 'Mobile number already registered' });
+      }
 
       return apiResponse.serverErrorResponse(
         res,
