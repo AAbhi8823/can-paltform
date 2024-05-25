@@ -80,7 +80,7 @@ exports.get_mystory_list = [
           // user_id: req.user.user._id,
         }).populate(
           "user_id",
-          "full_name profile_image CANID"
+          "full_name profile_image user_profile CANID"
         ).select("-CANID")
         .sort({
           createdAt: -1,
