@@ -78,10 +78,14 @@ exports.get_mystory_list = [
       const mystory_list = await mystory_model
         .find({
           // user_id: req.user.user._id,
-        })
+        }).populate(
+          "user_id",
+          "full_name profile_image CANID"
+        ).select("-CANID")
         .sort({
           createdAt: -1,
         });
+        console.log("line 83",mystory_list)
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
@@ -108,11 +112,13 @@ exports.get_my_story_list = [
       const mystory_list = await mystory_model.find({
         CANID: req.user.user.CANID,
       });
+      console.log("line 113",mystory_list)
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
         mystory_list
       );
+      
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
@@ -227,56 +233,7 @@ exports.most_liked_story = [
   },
 ];
 
-/**
- * Delete story api
- * in this api user will be able to delete their own story
- * When user delete the story, all the comments, likes, shares will be deleted
- * Also the media files will be deleted from the s3 bucket
- *
- */
-exports.delete_story = [
-  login_validator,
-  async (req, res) => {
-    try {
-      const story_id = req.params.story_id;
-      console.log("line 241", story_id);
 
-      const mystory = await mystory_model.findOne({ _id: story_id });
-      if (!mystory) {
-        return apiResponse.notFoundResponse(res, "Story not found");
-      }
-      console.log("line 245", mystory);
-
-      // Check if the user is the owner of the story
-      if (mystory.user_id.toString() !== req.user.user._id.toString()) {
-        return apiResponse.unauthorizedResponse(res, "Unauthorized user");
-      }
-
-      // Delete the media files from the S3 bucket
-      // const media_files = mystory.media_files;
-      // for (const file of media_files) {
-      //   const deleteParams = {
-      //     Bucket: 'your-bucket-name', // Replace with your bucket name
-      //     Key: file.key, // Ensure the key is correct
-      //   };
-      //   console.log("Deleting file: ", deleteParams);
-      //   await awsS3.delete_file(deleteParams);
-      // }
-      // console.log("line 249", "All media files deleted");
-
-      // Delete the story
-      const deleted = await mystory_model.findByIdAndDelete(story_id);
-
-      // Delete the comments of the story
-      const deleted_comments = await comment_model.deleteMany({ story_id: story_id });
-
-      return apiResponse.successResponseWithData(res, "Story Deleted", { deleted, deleted_comments });
-    } catch (err) {
-      console.log("line 254", err);
-      return apiResponse.serverErrorResponse(res, "Server Error...!", err);
-    }
-  },
-];
 /**
  * Save story api
  * in this api user will be able to save the story
@@ -309,22 +266,52 @@ exports.save_story = [
     }
   },
 ];
+
 /**
- * Delete saved story api
+ * Delete story api
+ * in this api user will be able to delete their own story
+ * When user delete the story, all the comments, likes, shares will be deleted
+ * Also the media files will be deleted from the s3 bucket
  *
  */
+exports.delete_story = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const story = await mystory_model.findOne({
+        user_id: req.user.user._id,
+        _id: req.params.story_id,
+      });
+      if (!story) {
+        return apiResponse.notFoundResponse(res, "Story not found");
+      }
+      //delete the media files from s3 bucket
+     // await awsS3.delete_files(story.media_files);
+      //delete the story
+      const story_deleted = await mystory_model.findByIdAndDelete(
+        req.params.story_id
+      );
 
-//add comment to story
-// exports.add_comment = [
-//   login_validator,
-//   async (req, res) => {
-//     try {
-//       const { story_id, comment } = req.body;
-//       const mystory = await mystory_model.findById(story_id);
-//       if(!mystory){
-//         return apiResponse.notFoundResponse(res, "Story not found");
-//       }
-//       const comment_data = {
-//         user_id: req.user.user._id,
-//         comment: comment,
-//       };
+      //delete the comments of the story
+      await comment_model.deleteMany({ story_id: req.params.story_id });
+      //delete the saved story
+      await mystory_save_model.deleteMany({ story_id: req.params.story_id });
+
+
+
+
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Story deleted successfully",
+        story_deleted
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
