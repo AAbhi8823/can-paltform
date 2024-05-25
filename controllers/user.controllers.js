@@ -1592,6 +1592,7 @@ exports.update_user_profile = [
       // Update the user profile
 
       const user_updated = await user_found.save();
+      user_updated.password = undefined;
 
       return apiResponse.successResponseWithData(
         res,
