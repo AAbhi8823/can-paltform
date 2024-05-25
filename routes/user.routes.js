@@ -9,6 +9,7 @@ router.post("/user-register",user_controllers.add_user)
 router.post("/verify-user",user_controllers.verify_user)
 router.post("/user-login",user_controllers.login_user)
 router.get("/get-user-profile",user_controllers.get_user_profile)
+router.patch("/update-user-profile",user_controllers.update_user_profile)
 
 //Password reset
 //router.post("/reset-password",user_controllers.reset_password)
