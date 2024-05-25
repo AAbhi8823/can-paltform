@@ -171,14 +171,11 @@ exports.add_user = [
             {
               email: email,
             },
-            
           ],
         });
 
-
-
         console.log("line 172", user_found);
-       
+
         // if(user_found.email){
         //   return res.status(409).json({
         //     status:false,
@@ -365,8 +362,11 @@ exports.add_user = [
       // if otp is not empty
     } catch (err) {
       console.log(err);
-      if (err.code === 11000) { // Duplicate key error
-        return res.status(400).json({ error: 'Mobile number already registered' });
+      if (err.code === 11000) {
+        // Duplicate key error
+        return res
+          .status(400)
+          .json({ error: "Mobile number already registered" });
       }
 
       return apiResponse.serverErrorResponse(
@@ -437,297 +437,6 @@ exports.google_user_registration = [
 
 /**
  * Create password for user account API
-
-// exports.add_user = [
-//   upload.single("profile_image"),
-//   async (req, res) => {
-//     try {
-//       // Express validator
-//       const errors = validationResult(req);
-//       if (!errors.isEmpty()) {
-//         return res.status(400).json({ errors: errors.array() });
-//       }
-//       // End Express validator
-
-//       // Destructuring request body
-//       const {
-//         full_name,
-//         phone_number,
-//         email,
-//         gender,
-//         date_of_birth,
-//         agreed_To_Terms,
-//         otp,
-//         // password,
-//         // confirm_password,
-//         user_profile,
-//       } = req.body;
-//       console.log("line 97", full_name, phone_number, gender);
-//       // validation for empty body
-//       if (!otp) {
-//         if (!full_name) {
-//           return res
-//             .status(400)
-//             .json({ status: false, msg: "Full name is required" });
-//         }
-//         if (!phone_number) {
-//           return res.status(400).json({
-//             status: false,
-//             msg: "Phone is required for registration",
-//           });
-//         }
-
-//         if (!gender) {
-//           return res
-//             .status(400)
-//             .json({ status: false, message: " Gender is required" });
-//         }
-//         if (!date_of_birth) {
-//           return res
-//             .status(400)
-//             .json({ status: false, message: " Date of birth is required" });
-//         }
-//         if (!agreed_To_Terms) {
-//           return res.status(400).json({
-//             status: false,
-//             message: " Please Agreed to terms and condition before proceed! ",
-//           });
-//         }
-
-//         // Validation of fields
-//         if (
-//           !validator.validatePhoneNumber(phone_number) &&
-//           !validator.validateEmail(email)
-//         ) {
-//           return apiResponse.validationErrorWithData(
-//             res,
-//             "Invalid email or mobile"
-//           );
-//         }
-//         // if (!validator.validateEmail(email)) {
-//         //   return apiResponse.validationErrorWithData(res, "Invalid email");
-//         // }
-
-//         // Check if user already exists
-
-//         const user_found = await user_model.findOne({
-//           $and: [
-//             {
-//               phone_number: phone_number,
-//             },
-//             {
-//               email: email,
-//             },
-//           ],
-//         });
-//         console.log("line 154", user_found);
-//         if (user_found && user_found.isOTPVerified == false) {
-//           return res.status(400).json({
-//             status: false,
-//             msg: "You are all ready registerd verify yourself to continue",
-//           });
-//         }
-//         console.log("line 153", user_found);
-//         //if user  not found then create the user
-//         if (user_found == null) {
-//           const verification_otp = await generateOTP(phone_number);
-//           await sendMobile_OTP(phone_number, verification_otp);
-//           console.log("line 161", verification_otp);
-//           //Password hashing
-//           // const salt = await bcrypt.genSalt(10);
-//           // const hashed_password = await bcrypt.hash(password, salt);
-
-//           const new_user = new user_model({
-//             full_name,
-//             phone_number,
-//             email,
-//             gender,
-//             date_of_birth,
-//             agreed_To_Terms,
-//             otp: verification_otp,
-//             // password: hashed_password,
-//             user_profile,
-//           });
-
-//           // Save user
-//           const user_created = await new_user.save();
-//           user_created.password = undefined;
-
-//           return res.status(200).json({
-//             status: true,
-//             message: `Successfully,verification OTP sent on mobile number: ${phone_number}.`,
-//             //data: user_created,
-//           });
-//         }
-
-//         if (user_found.isOTPVerified == false) {
-//           return res.status(400).json({
-//             status: false,
-//             msg: "You are all ready registerd verify yourself to continue",
-//           });
-//         }
-
-//         // Send the response
-//       } else if (otp) {
-//         console.log("line 211", phone_number, email, otp);
-//         const user_found = await user_model.findOne({
-//           $and: [
-//             {
-//               phone_number: phone_number,
-//             },
-//             {
-//               email: email,
-//             },
-//           ],
-//         });
-//         console.log("line 229", user_found);
-
-//         if (!user_found) {
-//           return res.status(400).json({ status: false, msg: "User not found" });
-//         }
-//         if (user_found.isOTPVerified == true) {
-//           if (!user_found.password) {
-//             //if user is verified but password is not there then proceed to create the password
-
-//             if (!req.body.password) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Please provide the password.",
-//               });
-//             }
-//             if (!req.body.confirm_password) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Please provide the confirm password.",
-//               });
-//             }
-//             if (req.body.password != req.body.confirm_password) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Password and confirm password does not match",
-//               });
-//             }
-//             //Password hashing
-//             const salt = await bcrypt.genSalt(10);
-//             const hashed_password = await bcrypt.hash(req.body.password, salt);
-//             console.log("line 265", user_found, hashed_password);
-//             // update password
-//             user_found.password = hashed_password;
-//             console.log("line 265", user_found);
-//             const user_updated_password = await user_found.save();
-
-//             console.log("line 273",user_found.password && user_found.user_profile == null)
-
-//             return res.status(200).json({
-//               status: true,
-//               message: "Successfully, account created add profile to proceed",
-//               //  data: user_updated,
-//             });
-//           }
-//         }
-
-//         //now create profile
-//         if (user_found.password && user_found.user_profile == null) {
-//           if (req.body.user_role == "Fighter") {
-//             user_found.user_profile = req.body.user_role;
-//             console.log("line 292", user_found);
-//          const user_found_updated=   await user_found.save();
-
-//             //if req.file is empty then save the default image
-//             if (!req.file) {
-//               user_found.profile_image = null;
-//               // "https://canplatform.s3.ap-south-1.amazonaws.com/canplatform/default.png";
-//               const user_updated = await user_found.save();
-//             } else {
-//               //upload profile images to s3
-//               const profile_image_url = await aws.single_file_upload(
-//                 req.file.buffer,
-//                 req.file.originalname
-//               );
-//               user_found.profile_image = profile_image_url;
-//               const user_updated = await user_found.save();
-//             }
-
-//             if (!req.body.pin) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Please provide the pin.",
-//               });
-//             }
-//             if (req.body.pin.length < 4) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Pin must be 4 digit long.",
-//               });
-//             }
-//             if (req.body.pin != req.body.confirm_pin) {
-//               return res.status(400).json({
-//                 status: false,
-//                 msg: "Pin and confirm pin does not match.",
-//               });
-//             }
-
-//             // user_found.pin = req.body.pin;
-//             // console.log("line 292", user_found);
-//             // const user_updated = await user_found.save();
-//             // user_updated.password = undefined;
-//             console.log("line 329", user_found);
-//             const pin_salt = await bcrypt.genSalt(10);
-//             const hashed_pin = await bcrypt.hash(req.body.pin, pin_salt);
-//             user_found.pin = hashed_pin;
-//             const user_updated = await user_found.save();
-//           } else {
-//             return res.status(400).json({
-//               status: false,
-//               msg: "First user role should be Fighter",
-//             });
-//           }
-//           //upload profile images to s3
-
-//           //now add pin
-
-//           //hash the pin
-//         }
-//         // console.log("line 278", user_found);
-//         // console.log("line 279", user_found.otp, otp);
-
-//         if (user_found.otp !== otp) {
-//           return res.status(400).json({ status: false, msg: "Invalid OTP" });
-//         }
-//         //check expiary otp
-//         if (user_found.otpExpiary > Date.now()) {
-//           return res.status(400).json({ status: false, msg: "OTP expired" });
-//         }
-//         // if otp is correct
-//         user_found.isOTPVerified = true;
-//         // user_found.otp = undefined;
-//         // user_found.otpExpiary = undefined;
-//         const user_updated_saved = await user_found.save();
-//         // user_updated.password = undefined;
-
-//         // Send the response
-//         return res.status(200).json({
-//           status: true,
-//           message:
-//             "Successfully, account verified create password to proceed.....!",
-//           //  data: user_updated_saved,
-//         });
-//       }
-
-//       // if otp verified true the procced to create password for account setup process
-
-//       // if otp is not empty
-//     } catch (err) {
-//       console.log(err);
-//       // Handle the error and send an appropriate response
-//       return apiResponse.serverErrorResponse(
-//         res,
-//         "Server Error...!",
-//         err.message
-//       );
-//     }
-//   },
-// ];
 
 /**
  * Create password for user account API
@@ -934,7 +643,7 @@ exports.login_user = [
       }
 
       //console.log("line 536", user_found.user_profile[0].CANID);
-      console.log("line 536",user_found, user_found.full_name)
+      console.log("line 536", user_found, user_found.full_name);
       const payload = {
         user: {
           _id: user_found._id.toString(),
@@ -947,7 +656,7 @@ exports.login_user = [
       };
       // Create and assign token
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1d",
+        expiresIn: process.env.JWT_TOKEN_EXPIRY,
       });
 
       // Send the response
@@ -1434,9 +1143,9 @@ exports.reset_password = [
     try {
       // Destructuring request body
       const { password, confirm_password } = req.body;
-      console.log("line 1435",  req.body);
+      console.log("line 1435", req.body);
       const { id, token } = req.query;
-      
+
       // Check if user exists
       const user_found = await user_model.findById({ _id: id });
       if (!user_found) {
@@ -1479,20 +1188,15 @@ exports.reset_password = [
         "line 1467",
         token,
         "tokne in db",
-      user_found.resetPasswordToken== token
+        user_found.resetPasswordToken == token
       );
       //now compare the token with the token in db
-      const isMatch =  bcrypt.compare(
-        token,
-        user_found.resetPasswordToken
-      );
+      const isMatch = bcrypt.compare(token, user_found.resetPasswordToken);
       console.log("line 1467", isMatch);
 
       if (!isMatch) {
         return apiResponse.validationErrorWithData(res, "Invalid reset token");
       }
-
-
 
       //Password hashing
       const salt = await bcrypt.genSalt(10);
@@ -1507,8 +1211,8 @@ exports.reset_password = [
       // Send the response
       return apiResponse.successResponseWithData(
         res,
-        "Successfully reset password",
-       // user_updated
+        "Successfully reset password"
+        // user_updated
       );
     } catch (err) {
       console.log(err);
@@ -1780,7 +1484,6 @@ exports.block_user_profile = [
   },
 ];
 
-
 /**
  * Get user profile API
  * This api will be used to get the user profile
@@ -1799,7 +1502,7 @@ exports.get_user_profile = [
           //   "user_profile._id": req.user.user._id,
           // },
         ],
-      })
+      }).select("-password");
 
       // Check if the user exists
       if (!user_found) {
@@ -1819,6 +1522,81 @@ exports.get_user_profile = [
         res,
         "User profile",
         user_profile
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * User Profile Update API
+ * This api will be used to update the user profile
+ */
+
+exports.update_user_profile = [
+  login_validator,
+  upload.single("profile_image"),
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Fetch the user from user_profile or from user_profile
+      const user_found = await user_model.findOne({ _id: req.user.user._id });
+
+      // Check if the user exists
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      //update the user profile image s3 bucket and save the url in db
+     if(req.files){
+      const file = req.files;
+      var profile_image_url = await aws.single_file_upload(
+        req.file.buffer,
+        req.file.originalname
+      );
+     }
+
+      if (user_found._id.toString() === req.user.user._id) {
+        user_found.full_name = req.body.full_name
+          ? req.body.full_name
+          : user_found.full_name;
+        user_found.phone_number = req.body.phone_number
+          ? req.body.phone_number
+          : user_found.phone_number;
+        user_found.email = req.body.email ? req.body.email : user_found.email;
+        user_found.profile_image = profile_image_url
+          ? profile_image_url
+          : user_found.profile_image;
+
+        user_found.date_of_birth = req.body.date_of_birth
+          ? req.body.date_of_birth
+          : user_found.date_of_birth;
+      }
+
+      // Update the user profile
+
+      const user_updated = await user_found.save();
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User profile updated",
+        user_updated
       );
     } catch (err) {
       console.log("line 80", err);

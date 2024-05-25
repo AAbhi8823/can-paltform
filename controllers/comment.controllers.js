@@ -20,13 +20,16 @@ const login_validator =
         const { comment, story_id } = req.body;
         const user_id = req.user.user._id;
         const CANID = req.user.user.CANID;
-        const story = await mystory_model.findById(story_id);
+        var story = await mystory_model.findById(story_id).populate("user_id");
+        console.log("line 25",story);
         if (!story) {
           return res.status(404).json({ msg: "Story not found" });
         }
-        console.log("line 27",req.user.user.full_name);
+        console.log("line 27",story.user_id.profile_image);
         const new_comment = new comment_model({
           name: req.user.user.full_name,
+          user_profile: req.user.user.user_profile,
+          profile_image:story.user_id.profile_image,
           comment,
           user_id,
           CANID,
