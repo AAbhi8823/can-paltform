@@ -45,6 +45,11 @@ const mystorySchema = new Schema(
 
     comments: [
       {
+        comment_id: {
+          type: Schema.Types.ObjectId,
+          ref: "Comment",
+          required: false,
+        },
         name: { 
           type: String, 
           required: true 
