@@ -17,6 +17,14 @@ const commentSchema = new Schema(
       ref: "User",
       required: true,
     },
+    user_profile: {
+      type: String,
+      required: false,
+    },
+    profile_image: {
+      type: String,
+      required: false,
+    },
     CANID: {
       type: String,
       required: true,
