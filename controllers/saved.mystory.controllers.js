@@ -26,12 +26,12 @@ exports.save_mystory = [
           errors.array()
         );
       }
-      const mystory_id = req.body.story_id;
-      console.log("line 28", mystory_id);
+      const story_id = req.body.story_id;
+      console.log("line 28", story_id);
       const user_id = req.user.user._id;
-      const mystory = await mystory_model.findById(mystory_id);
+      const mystory = await mystory_model.findById(story_id);
       if (!mystory) {
-        return apiResponse.notFoundResponse(res, "Mystory not found");
+        return apiResponse.notFoundResponse(res, "Story not found");
       }
       //check if the mystory is already saved
       const user = await user_model.findById(user_id);
@@ -39,7 +39,7 @@ exports.save_mystory = [
         return apiResponse.notFoundResponse(res, "User not found");
       }
       const saved_mystory = new saved_story_model({
-        mystory_id: mystory_id,
+        story_id: story_id,
         user_id: user_id,
       });
       const saved = await saved_mystory.save();

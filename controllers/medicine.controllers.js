@@ -298,7 +298,7 @@ exports.get_medicine_details = [
  * 
  */
 
-exports.get_medicine_details_by_date = [
+exports.get_medicine_details_month_wise= [
   login_validator,
   check("medicine_date").notEmpty().withMessage("Date cannot be empty"),
   async (req, res) => {
@@ -351,3 +351,50 @@ exports.get_medicine_details_by_date = [
     }
   },
 ];
+
+
+/**
+ * Get Medicine Details API
+ * This api will return all expired medicines or tenure completed medicines
+ * This api will be get the medicine details month wise in two array of object medicine histroy and ongoing medicine
+ * 
+ */
+
+exports.get_medicine_bank_details_month_wise = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const medicines = await medicine_model.find({
+        user_id: req.user.user._id,
+      });
+      if (!medicines) {
+        return apiResponse.validationErrorWithData(res, "Medicine not found");
+      }
+      const medicine_history = [];
+      const ongoing_medicine = [];
+      medicines.forEach((medicine) => {
+        medicine.medicines.forEach((med) => {
+          if (new Date(med.medicine_stop_date) < new Date()) {
+            medicine_history.push(med);
+          } else {
+            ongoing_medicine.push(med);
+          }
+        });
+      });
+      return apiResponse.successResponseWithData(
+        res,
+        "Medicine details",
+        { medicine_history, ongoing_medicine }
+      );
+    } catch (err) {
+      console.log(err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
