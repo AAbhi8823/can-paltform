@@ -546,6 +546,18 @@ exports.verify_user = [
           "User already verified"
         );
       }
+      if(!otp){
+        const verification_otp = await generateOTP(phone_number);
+        await sendMobile_OTP(phone_number, verification_otp);
+        user_found.otp = verification_otp;
+        await user_found.save();
+        return apiResponse.successResponseWithData(
+          res,
+          "OTP sent successfully"
+          //verification_otp
+        );
+      }
+
 
       // Check if otp is correct
       if (user_found.otp !== otp) {
@@ -562,6 +574,7 @@ exports.verify_user = [
       user_found.otp = undefined;
       user_found.otpExpiary = undefined;
       const user_updated = await user_found.save();
+      user_updated.password = undefined;  
 
       // Send the response
       return apiResponse.successResponseWithData(

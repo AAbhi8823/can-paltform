@@ -140,7 +140,11 @@ exports.update_comment = [
       const { comment } = req.body;
       const comment_found = await comment_model.findById(comment_id);
       if (!comment_found) {
-        return res.status(404).json({ msg: "Comment not found" });
+        return res.status(404).json({
+          status: false,
+          message: "Comment not found",
+        
+        });
       }
       if (comment_found.user_id.toString() !== req.user.user._id.toString()) {
         return res.status(401).json({
