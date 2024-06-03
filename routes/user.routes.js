@@ -11,6 +11,7 @@ router.post("/user-login",user_controllers.login_user)
 router.get("/get-user-profile",user_controllers.get_user_profile)
 router.patch("/update-user-profile",user_controllers.update_user_profile)
 router.get("/get-user-by-id/:user_id",user_controllers.get_user_by_id)
+router.put("/change-password",user_controllers.change_password)
 
 //Password reset
 //router.post("/reset-password",user_controllers.reset_password)
