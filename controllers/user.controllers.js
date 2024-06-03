@@ -1393,7 +1393,7 @@ exports.block_user_profile_profile = [
     try {
       // Fetch the root user
       const user_profile_found = await user_model.findOne({
-        phone_number: req.user.user.phone_number,
+        _id: req.user.user._id,
       });
 
       // Check if the root user exists
@@ -1525,7 +1525,7 @@ exports.get_user_profile = [
           //   "user_profile._id": req.user.user._id,
           // },
         ],
-      }).select("-password");
+      }).select("-password -jwtTokenBlockedList -otp -otpExpiary"); //.select("user_profile
 
       // Check if the user exists
       if (!user_found) {
