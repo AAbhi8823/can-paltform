@@ -48,6 +48,12 @@ const userSchema = new Schema(
       type: String,
       required: false,
     },
+   jwtTokenBlockedList:[{
+      type: String,
+      required: false,
+    
+   }] ,
+
     // user_profile: [
     //   {
     //     full_name: {
