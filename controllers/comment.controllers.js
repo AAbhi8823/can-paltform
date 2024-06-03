@@ -20,7 +20,7 @@ exports.add_comment = [
       const { comment, story_id } = req.body;
       const user_id = req.user.user._id;
       const CANID = req.user.user.CANID;
-      var story = await mystory_model.findById(story_id).populate("user_id");
+      var story = await mystory_model.findById(story_id)//.populate("user_id");
       console.log("line 25", story);
       if (!story) {
         return res.status(404).json({ msg: "Story not found" });
