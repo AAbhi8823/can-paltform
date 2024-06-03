@@ -575,6 +575,7 @@ exports.verify_user = [
       user_found.otpExpiary = undefined;
       const user_updated = await user_found.save();
       user_updated.password = undefined;  
+      user_updated.jwtTokenBlockedList = undefined;
 
       // Send the response
       return apiResponse.successResponseWithData(
@@ -671,6 +672,15 @@ exports.login_user = [
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_TOKEN_EXPIRY,
       });
+      //Save the token in the user model first remove the last token from the list then add the new token
+   
+      if (user_found.jwtTokenBlockedList.length > 0) {
+        user_found.jwtTokenBlockedList.pop();
+      }
+      user_found.jwtTokenBlockedList.push(token);
+      await user_found.save();
+
+
 
       // Send the response
       return apiResponse.successResponseWithData(
@@ -1622,3 +1632,44 @@ exports.update_user_profile = [
     }
   },
 ];
+
+// get user  by _id
+
+exports.get_user_by_id = [
+  login_validator,
+  async (req, res) => {
+    try {
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // Fetch the user from user_profile or from user_profile
+      const user_found = await user_model.findOne({ _id: req.params.user_id }).select("full_name phone_number email user_profile profile_image");
+
+      // Check if the user exists
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User profile",
+        user_found
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+]
+      
+

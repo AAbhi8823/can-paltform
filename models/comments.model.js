@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const commentSchema = new Schema(
-  { 
-    name: { 
-      type: String, 
-      required: false 
+  {
+    name: {
+      type: String,
+      required: false,
     },
     comment: {
       type: String,
@@ -29,6 +29,19 @@ const commentSchema = new Schema(
       type: String,
       required: true,
     },
+    comment_like: [
+      {
+        like: {
+          type: String,
+          required: false,
+        },
+       
+      },
+      {
+        timestamps: true,
+      }
+    ],
+
     story_id: {
       type: Schema.Types.ObjectId,
       ref: "MyStory",
