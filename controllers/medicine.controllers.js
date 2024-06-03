@@ -336,9 +336,9 @@ exports.get_medicine_details_month_wise= [
         };
       }).filter(med => med.medicines.length > 0);
 
-      if (filteredMedicines.length === 0) {
-        return apiResponse.notFoundResponse(res, "No medicines found for the given date");
-      }
+      // if (filteredMedicines.length === 0) {
+      //   return apiResponse.notFoundResponse(res, "No medicines found for the given date");
+      // }
 
       return apiResponse.successResponseWithData(res, "Medicine details", filteredMedicines);
     } catch (err) {

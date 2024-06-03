@@ -1250,6 +1250,79 @@ exports.reset_password = [
 ];
 
 /**
+ * Change Password API
+ * In this api user will be able to change the password when he/she is logged in already
+ * user will provide the old password and new password and confirm password
+ */
+
+exports.change_password = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Express validator
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+      // End Express validator
+
+      // Destructuring request body
+      const { old_password, password, confirm_password } = req.body;
+
+      // Check if user exists
+      const user_found = await user_model.findById(req.user.user._id);
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Check if old password is correct
+      const validatePassword = await bcrypt.compare(
+        old_password,
+        user_found.password
+      );
+      if (!validatePassword) {
+        return apiResponse.validationErrorWithData(res, "Incorrect password");
+      }
+
+      // Check if password is correct
+      if (password !== confirm_password) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Password and confirm password does not match"
+        );
+      }
+
+      //Password hashing
+      const salt = await bcrypt.genSalt(10);
+      const hashed_password = await bcrypt.hash(password, salt);
+
+      // If old password is correct
+      user_found.password = hashed_password;
+      const user_updated = await user_found.save();
+
+      // Send the response
+      return apiResponse.successResponseWithData(
+        res,
+        "Successfully changed password",
+        user_updated
+      );
+    } catch (err) {
+      console.log(err);
+      // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
  * Reset pin api
  * This API will be used to reset the pin of the user_profile and users in the user_profile
  * In this api user will enter the phone number or email and get the OTP verification code
