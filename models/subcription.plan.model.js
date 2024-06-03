@@ -54,7 +54,7 @@ const subscriptionPlanSchema = new Schema({
       },
       is_available: {
         type: Boolean,
-        default: false,
+        default: true,
       },
       //   feature_description: {
       //     type: String,

@@ -187,13 +187,13 @@ exports.update_subscription_plan = [
   async (req, res) => {
     try {
       const subscription_plan = await subscription_plan_model.findById(
-        req.params._id
+        req.params.subscription_id
       );
       if (subscription_plan) {
         //Update subscription plan
         const updated_subscription_plan =
           await subscription_plan_model.findByIdAndUpdate(
-            req.params._id,
+            req.params.subscription_id,
             {
               $set: req.body,
             },
