@@ -186,9 +186,10 @@ exports.update_medicine = [
 
 exports.delete_medicine = [
   login_validator,
-  check("medicine_id").notEmpty().withMessage("Medicine id can not be empty"),
+  check("medicine_id").notEmpty().withMessage("Medicine id cannot be empty"),
   async (req, res) => {
     try {
+      // Validate the request
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return apiResponse.validationErrorWithData(
@@ -198,12 +199,33 @@ exports.delete_medicine = [
         );
       }
 
-      const medicine = await medicine_controller.findOneAndDelete({
-        _id: req.body.medicine_id,
-      });
+      // Find and update the user's medicines by removing the specified medicine
+      const userId = req.user.user._id;
+      const medicineId = req.params.medicine_id;
+      console.log("line 36", userId, medicineId);
+
+      const medicine = await medicine_model.findOneAndUpdate(
+        { user_id: userId },
+        {
+          $pull: {
+            medicines: { _id: medicineId }
+          }
+        },
+        { new: true } // Return the modified document
+      );
+
+      // Check if the medicine was found and deleted
       if (!medicine) {
         return apiResponse.validationErrorWithData(res, "Medicine not found");
       }
+
+      // Check if the medicine array was modified
+      const isMedicineDeleted = !medicine.medicines.some(med => med._id == medicineId);
+      if (!isMedicineDeleted) {
+        return apiResponse.validationErrorWithData(res, "Medicine not deleted");
+      }
+
+      // Respond with success
       return apiResponse.successResponseWithData(
         res,
         "Medicine deleted successfully",
@@ -219,7 +241,6 @@ exports.delete_medicine = [
     }
   },
 ];
-
 /**
  * Get Medicine List API
  * This api will be get the medicine list
