@@ -20,6 +20,17 @@ const mystorySchema = new Schema(
       type: String,
       required: false,
     },
+    isNew: {
+      type: Boolean,
+      default: true,
+    },
+    isTrending: {
+      type: Boolean,
+      default: false,
+    },
+    
+
+
     media_files: [
       {
         type: String,
