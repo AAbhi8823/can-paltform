@@ -546,7 +546,7 @@ exports.verify_user = [
           "User already verified"
         );
       }
-      if(!otp){
+      if (!otp) {
         const verification_otp = await generateOTP(phone_number);
         await sendMobile_OTP(phone_number, verification_otp);
         user_found.otp = verification_otp;
@@ -557,7 +557,6 @@ exports.verify_user = [
           //verification_otp
         );
       }
-
 
       // Check if otp is correct
       if (user_found.otp !== otp) {
@@ -574,7 +573,7 @@ exports.verify_user = [
       user_found.otp = undefined;
       user_found.otpExpiary = undefined;
       const user_updated = await user_found.save();
-      user_updated.password = undefined;  
+      user_updated.password = undefined;
       user_updated.jwtTokenBlockedList = undefined;
 
       // Send the response
@@ -673,14 +672,12 @@ exports.login_user = [
         expiresIn: process.env.JWT_TOKEN_EXPIRY,
       });
       //Save the token in the user model first remove the last token from the list then add the new token
-   
+
       if (user_found.jwtTokenBlockedList.length > 0) {
         user_found.jwtTokenBlockedList.pop();
       }
       user_found.jwtTokenBlockedList.push(token);
       await user_found.save();
-
-
 
       // Send the response
       return apiResponse.successResponseWithData(
@@ -1307,7 +1304,6 @@ exports.change_password = [
       user_found.otp = undefined;
       user_found.jwtTokenBlockedList = undefined;
 
-
       // Send the response
       return apiResponse.successResponseWithData(
         res,
@@ -1505,84 +1501,66 @@ exports.block_user_profile_profile = [
  * Block user profile API
  * In this api the one user will be able to block tyo other user profile
  */
-
 exports.block_user_profile = [
   login_validator,
   async (req, res) => {
     try {
-      // Fetch the user from user_profile or from user_profile
-      const user_found = await user_model.findOne({
-        $or: [
-          { _id: req.body.user_id },
+      // Check if req.user is set
+      if (!req.user.user || !req.user.user._id) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Authentication required"
+        );
+      }
 
-          {
-            "user_profile._id": req.body.user_id,
-          },
-        ],
-      }); //.select("user_profile");
-      console.log("line 80", user_found);
+      // Get the authenticated user ID
+      const authenticatedUserId = req.user.user._id.toString();
+
+      // Check if the user is trying to block themselves
+      if (authenticatedUserId === req.body.user_id) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "You cannot block yourself"
+        );
+      }
+
+      // Fetch the user to be blocked/unblocked
+      const userToBlock = await user_model.findOne({
+        _id: req.body.user_id,
+      });
+
+      console.log("line 80", userToBlock);
 
       // Check if the user exists
-      if (!user_found) {
+      if (!userToBlock) {
         return apiResponse.validationErrorWithData(res, "User not found");
       }
 
-      let userToUpdate;
-      if (user_found._id.toString() === req.body.user_id) {
-        userToUpdate = user_found;
-      } else {
-        userToUpdate = user_found.user_profile.find(
-          (profile) => profile._id === req.body.user_id
-        );
-      }
-
       // Toggle the isBlocked status
-      userToUpdate.isBlocked = !userToUpdate.isBlocked;
+      userToBlock.isBlocked = !userToBlock.isBlocked;
+      const updatedUser = await userToBlock.save();
 
-      if (user_found.isBlocked) {
-        user_found.isBlocked = false;
-        const user_blocked = await user_found.save();
-        const blocked_user_response = {
-          _id: user_blocked._id,
-          profile_image: user_blocked.profile_image,
-          full_name: user_blocked.full_name,
-          phone_number: user_blocked.phone_number,
-          email: user_blocked.email,
-          isBlocked: user_blocked.isBlocked,
-        };
-        return apiResponse.successResponseWithData(
-          res,
-          "Successfully, User profile unblocked",
-          blocked_user_response //user_blocked
-        );
-      }
-      // Block the user
-      user_found.isBlocked = true;
-      const user_blocked = await user_found.save();
-      const blocked_user_response = {
-        _id: user_blocked._id,
-        profile_image: user_blocked.profile_image,
-        full_name: user_blocked.full_name,
-        phone_number: user_blocked.phone_number,
-        email: user_blocked.email,
-        isBlocked: user_blocked.isBlocked,
+      const userResponse = {
+        _id: updatedUser._id,
+        profile_image: updatedUser.profile_image,
+        full_name: updatedUser.full_name,
+        phone_number: updatedUser.phone_number,
+        email: updatedUser.email,
+        isBlocked: updatedUser.isBlocked,
       };
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Successfully, User profile blocked",
-        blocked_user_response // user_blocked
-      );
+      const message = updatedUser.isBlocked
+        ? "Successfully, User profile blocked"
+        : "Successfully, User profile unblocked";
+
+      return apiResponse.successResponseWithData(res, message, userResponse);
     } catch (err) {
       console.log("line 80", err);
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
     }
   },
 ];
+
 
 /**
  * Get user profile API
@@ -1594,15 +1572,17 @@ exports.get_user_profile = [
   async (req, res) => {
     try {
       // Fetch the user from user_profile or from user_profile
-      const user_found = await user_model.findOne({
-        $or: [
-          { _id: req.user.user._id },
+      const user_found = await user_model
+        .findOne({
+          $or: [
+            { _id: req.user.user._id },
 
-          // {
-          //   "user_profile._id": req.user.user._id,
-          // },
-        ],
-      }).select("-password -jwtTokenBlockedList -otp -otpExpiary"); //.select("user_profile
+            // {
+            //   "user_profile._id": req.user.user._id,
+            // },
+          ],
+        })
+        .select("-password -jwtTokenBlockedList -otp -otpExpiary"); //.select("user_profile
 
       // Check if the user exists
       if (!user_found) {
@@ -1664,16 +1644,16 @@ exports.update_user_profile = [
       }
 
       //update the user profile image s3 bucket and save the url in db
-      
-      if(req.file){
-      let file = req.file;
-      console.log("line 80", file);
-      var profile_image_url = await aws.single_file_upload(
-        req.file.buffer,
-        req.file.originalname
-      );
-     }
-     console.log("line 80", profile_image_url);
+
+      if (req.file) {
+        let file = req.file;
+
+        var profile_image_url = await aws.single_file_upload(
+          req.file.buffer,
+          req.file.originalname
+        );
+      }
+      // console.log("line 80", profile_image_url);
 
       if (user_found._id.toString() === req.user.user._id) {
         user_found.full_name = req.body.full_name
@@ -1696,6 +1676,7 @@ exports.update_user_profile = [
 
       const user_updated = await user_found.save();
       user_updated.password = undefined;
+      user_updated.jwtTokenBlockedList = undefined;
 
       return apiResponse.successResponseWithData(
         res,
@@ -1719,7 +1700,6 @@ exports.get_user_by_id = [
   login_validator,
   async (req, res) => {
     try {
-
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return apiResponse.validationErrorWithData(
@@ -1729,7 +1709,9 @@ exports.get_user_by_id = [
         );
       }
       // Fetch the user from user_profile or from user_profile
-      const user_found = await user_model.findOne({ _id: req.params.user_id }).select("full_name phone_number email user_profile profile_image");
+      const user_found = await user_model
+        .findOne({ _id: req.params.user_id })
+        .select("full_name phone_number email user_profile profile_image");
 
       // Check if the user exists
       if (!user_found) {
@@ -1749,7 +1731,5 @@ exports.get_user_by_id = [
         err.message
       );
     }
-  }
-]
-      
-
+  },
+];

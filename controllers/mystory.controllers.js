@@ -315,3 +315,67 @@ exports.delete_story = [
     }
   },
 ];
+
+
+/**
+ * Get STORY BY FILTER API 
+ * in this api user will be able to see the story by filter 
+ * If filter is empty then all the story will be fetched and 
+ * other filters new , trending, most liked will be applied
+ */
+
+exports.get_story_by_filter = [
+  //login_validator,
+  async (req, res) => {
+    try {
+      let filter = req.body.filter;
+      let mystory_list = [];
+      if (filter === "new") {
+        mystory_list = await mystory_model
+          .find()
+          .sort({ createdAt: -1 })
+          .populate(
+            "user_id",
+            "full_name profile_image user_profile CANID"
+          )
+          .select("-CANID");
+      } else if (filter === "trending") {
+        mystory_list = await mystory_model
+          .find({ isTrending: true })
+          .populate(
+            "user_id",
+            "full_name profile_image user_profile CANID"
+          )
+          .select("-CANID");
+      } else if (filter === "most_liked") {
+        mystory_list = await mystory_model
+          .find()
+          .sort({ likes: -1 })
+          .populate(
+            "user_id",
+            "full_name profile_image user_profile CANID"
+          )
+          .select("-CANID");
+      } else {
+        mystory_list = await mystory_model
+          .find()
+          .populate(
+            "user_id",
+            "full_name profile_image user_profile CANID"
+          )
+          .select("-CANID");
+      }
+      return apiResponse.successResponseWithData(
+        res,
+        "Mystory List Fetched",
+        mystory_list
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
