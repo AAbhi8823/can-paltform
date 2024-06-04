@@ -42,79 +42,34 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    subscription: {
+      plan: {
+        type: Schema.Types.ObjectId,
+        ref: "SubscriptionPlan",
+        required: false,
+      },
+      start_date: {
+        type: Date,
+        required: false,
+      },
+      end_date: {
+        type: Date,
+        required: false,
+      },
+    },
     profile_image: { type: String, required: false },
 
     resetPasswordToken: {
       type: String,
       required: false,
     },
-   jwtTokenBlockedList:[{
-      type: String,
-      required: false,
-    
-   }] ,
+    jwtTokenBlockedList: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
 
-    // user_profile: [
-    //   {
-    //     full_name: {
-    //       type: String,
-
-    //       required: false,
-    //     },
-    //     // chiled_user_type: {
-    //     //   type: String,
-    //     //   required: false,
-    //     // },
-    //     profile_about: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     profile_description: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     CANID: {
-    //       type: String,
-    //       default: () => `CAN${parseInt(100000 + Math.random() * 900000)}`,
-    //       unique: true,
-    //     },
-    //     profile_role: {
-    //       type: String,
-    //       enum: ["Veteran", "Caregiver"],
-    //       required: false,
-    //     },
-    //     pin: {
-    //       type: String,
-    //       required: true,
-    //     },
-    //     profile_image: { type: String, required: false },
-    //     phone_number: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     date_of_birth: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     // isSubscribed: {
-    //     //   type: Boolean,
-    //     //   default: false,
-    //     // },
-    //     isBlocked: {
-    //       type: Boolean,
-    //       default: false,
-    //     },
-    //     blockedBy: {
-    //       type: String,
-    //       required: false,
-    //     },
-    //     status: {
-    //       type: String,
-    //       enum: ["Active", "Inactive"],
-    //       default: "Active",
-    //     },
-    //   },
-    // ],
     isBlocked: {
       type: Boolean,
       default: false,
@@ -123,9 +78,6 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
-    // user_profile_image_url: { type: String, required: false },
-    // user_profile_name: { type: String, required: false },
 
     // user_type: {
     //   type: String,

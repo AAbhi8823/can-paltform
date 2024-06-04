@@ -1303,6 +1303,10 @@ exports.change_password = [
       // If old password is correct
       user_found.password = hashed_password;
       const user_updated = await user_found.save();
+      user_found.password = undefined;
+      user_found.otp = undefined;
+      user_found.jwtTokenBlockedList = undefined;
+
 
       // Send the response
       return apiResponse.successResponseWithData(
@@ -1660,13 +1664,16 @@ exports.update_user_profile = [
       }
 
       //update the user profile image s3 bucket and save the url in db
-     if(req.files){
-      const file = req.files;
+      
+      if(req.file){
+      let file = req.file;
+      console.log("line 80", file);
       var profile_image_url = await aws.single_file_upload(
         req.file.buffer,
         req.file.originalname
       );
      }
+     console.log("line 80", profile_image_url);
 
       if (user_found._id.toString() === req.user.user._id) {
         user_found.full_name = req.body.full_name
