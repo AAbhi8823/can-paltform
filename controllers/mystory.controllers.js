@@ -71,32 +71,33 @@ exports.add_mystory = [
 //Get All POST/STORY LIST OF USER
 
 exports.get_mystory_list = [
-  //login_validator,
+  login_validator,
   async (req, res) => {
     try {
-      // console.log("line 77",req.user.user._id)
+      // Check if req.user is set
+      if (!req.user || !req.user.user || !req.user.user._id) {
+        return apiResponse.validationErrorWithData(res, "Authentication required");
+      }
+
+      // Get the authenticated user ID
+      const authenticatedUserId = req.user.user._id;
+
+      // Fetch the authenticated user's profile to get the blocked users
+      const userProfile = await user_model.findOne({ _id: authenticatedUserId }).select('blockedTo');
+      const blockedUsers = userProfile.blockedTo.map(blocked => blocked.user_id);
+
+      // Fetch the stories excluding those from blocked users
       const mystory_list = await mystory_model
         .find({
-          // user_id: req.user.user._id,
-        }).populate(
-          "user_id",
-          "full_name profile_image user_profile CANID"
-        ).select("-CANID")
-        .sort({
-          createdAt: -1,
-        });
-        console.log("line 83",mystory_list)
-      return apiResponse.successResponseWithData(
-        res,
-        "Mystory List Fetched",
-        mystory_list
-      );
+          user_id: { $nin: blockedUsers }
+        })
+        .populate("user_id", "full_name profile_image user_profile CANID")
+        .select("-CANID")
+        .sort({ createdAt: -1 });
+
+      return apiResponse.successResponseWithData(res, "Mystory List Fetched", mystory_list);
     } catch (err) {
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
     }
   },
 ];
