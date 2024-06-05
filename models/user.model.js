@@ -74,6 +74,17 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    blockedBy: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    }], 
+    blockedTo: [{
+     user_id:{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false,}
+    }],
     isAdimn: {
       type: Boolean,
       default: false,

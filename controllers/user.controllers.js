@@ -1507,10 +1507,7 @@ exports.block_user_profile = [
     try {
       // Check if req.user is set
       if (!req.user.user || !req.user.user._id) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Authentication required"
-        );
+        return apiResponse.validationErrorWithData(res, "Authentication required");
       }
 
       // Get the authenticated user ID
@@ -1518,26 +1515,46 @@ exports.block_user_profile = [
 
       // Check if the user is trying to block themselves
       if (authenticatedUserId === req.body.user_id) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "You cannot block yourself"
-        );
+        return apiResponse.validationErrorWithData(res, "You cannot block yourself");
       }
 
       // Fetch the user to be blocked/unblocked
-      const userToBlock = await user_model.findOne({
-        _id: req.body.user_id,
-      });
-
-      console.log("line 80", userToBlock);
+      const userToBlock = await user_model.findOne({ _id: req.body.user_id });
 
       // Check if the user exists
       if (!userToBlock) {
         return apiResponse.validationErrorWithData(res, "User not found");
       }
 
-      // Toggle the isBlocked status
-      userToBlock.isBlocked = !userToBlock.isBlocked;
+      // Fetch the authenticated user's profile
+      const user_profile = await user_model.findOne({ _id: req.user.user._id });
+
+      // Check if the user's profile exists
+      if (!user_profile) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Initialize blockedTo array if it doesn't exist
+      if (!user_profile.blockedTo) {
+        user_profile.blockedTo = [];
+      }
+
+      // Check if the user_id is already in the blockedTo array
+      const blockedIndex = user_profile.blockedTo.findIndex(
+        (blockedUser) => blockedUser.user_id.toString() === req.body.user_id
+      );
+
+      if (blockedIndex >= 0) {
+        // If user_id is found in the blockedTo array, remove it
+        user_profile.blockedTo.splice(blockedIndex, 1);
+        userToBlock.isBlocked = false;
+      } else {
+        // If user_id is not found in the blockedTo array, add it
+        user_profile.blockedTo.push({ user_id: req.body.user_id });
+        userToBlock.isBlocked = true;
+      }
+
+      await user_profile.save();
       const updatedUser = await userToBlock.save();
 
       const userResponse = {
@@ -1555,7 +1572,47 @@ exports.block_user_profile = [
 
       return apiResponse.successResponseWithData(res, message, userResponse);
     } catch (err) {
-      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+    }
+  },
+];
+/**
+ * Get blocked users API for the authenticated user
+ */
+exports.get_blocked_users= [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Check if req.user is set
+      if (!req.user.user || !req.user.user._id) {
+        return apiResponse.validationErrorWithData(res, "Authentication required");
+      }
+
+      // Get the authenticated user ID
+      const authenticatedUserId = req.user.user._id.toString();
+
+      // Fetch the authenticated user's profile
+      const user_profile = await user_model.findOne({ _id: authenticatedUserId });
+
+      // Check if the user's profile exists
+      if (!user_profile) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Initialize blockedTo array if it doesn't exist
+      if (!user_profile.blockedTo) {
+        user_profile.blockedTo = [];
+      }
+
+      // Get the list of blocked users
+      const blockedUsers = user_profile.blockedTo.map((blockedUser) => blockedUser.user_id);
+      console.log("line 80", blockedUsers);
+
+      // Fetch the details of the blocked users
+      const blockedUsersDetails = await user_model.find({ _id: { $in: blockedUsers } }).select("full_name profile_image  ");
+      // Send the response
+      return apiResponse.successResponseWithData(res, "List of blocked users", blockedUsersDetails);
+    } catch (err) {
       return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
     }
   },
