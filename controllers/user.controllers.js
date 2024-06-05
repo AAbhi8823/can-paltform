@@ -1609,7 +1609,7 @@ exports.get_blocked_users= [
       console.log("line 80", blockedUsers);
 
       // Fetch the details of the blocked users
-      const blockedUsersDetails = await user_model.find({ _id: { $in: blockedUsers } }).select("full_name profile_image  ");
+      const blockedUsersDetails = await user_model.find({ _id: { $in: blockedUsers } }).select("full_name profile_image user_profile");
       // Send the response
       return apiResponse.successResponseWithData(res, "List of blocked users", blockedUsersDetails);
     } catch (err) {
