@@ -215,6 +215,7 @@ exports.add_user = [
             date_of_birth,
             agreed_To_Terms,
             otp: verification_otp,
+
             // password: hashed_password,
             //user_profile,
           });
@@ -656,13 +657,14 @@ exports.login_user = [
       }
 
       //console.log("line 536", user_found.user_profile[0].CANID);
-      console.log("line 536", user_found, user_found.full_name);
+      console.log("line 536", user_found.isAdmin, user_found.full_name);
       const payload = {
         user: {
           _id: user_found._id.toString(),
 
           CANID: user_found.CANID,
           full_name: user_found.full_name,
+          isAdmin: user_found.isAdmin,
           phone_number: user_found.phone_number,
           user_profile: user_found.user_profile,
         },
@@ -1779,6 +1781,42 @@ exports.get_user_by_id = [
         res,
         "User profile",
         user_found
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
+
+/**
+ * Get users list by admin 
+ */
+exports.get_users_list_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model
+        .find()
+        .select("full_name phone_number email user_profile profile_image");
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Users list",
+        users_list
       );
     } catch (err) {
       console.log("line 80", err);

@@ -85,7 +85,7 @@ const userSchema = new Schema(
       ref: "User",
       required: false,}
     }],
-    isAdimn: {
+    isAdmin: {
       type: Boolean,
       default: false,
     },
