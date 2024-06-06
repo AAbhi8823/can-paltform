@@ -3,7 +3,8 @@
  * In this the document will be uploaded to the s3 bucket and store the document url in db
  */
 
-const healthrecords_model = require("../models/healthrecords.models");
+const healthrecords_model= require("../models/healthrecords.models");
+//const health_record_folder_model = require("../models/healthrecords.models");
 const user_model = require("../models/user.model");
 const aws = require("../helpers/aws.s3");
 
@@ -12,6 +13,7 @@ const { validationResult } = require("express-validator");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
 const multer = require("multer");
+const { Health } = require("aws-sdk");
 //multer storage
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -249,6 +251,100 @@ exports.update_health_record = [
       );
     } catch (err) {
       // Handle errors
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Create a folder for health records and add documents to the folder
+ * 
+ */
+
+exports.add_health_record_folder= [
+  login_validator,
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
+      }
+
+      // Check if the user exists
+      const user_found = await user_model.findOne({
+        _id: req.user.user._id,
+      });
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Create new health record folder
+      const health_record_folder = new healthrecords_model.HealthRecordFolder({
+        user_id: req.user.user._id,
+        CANID: req.user.user.CANID,
+        folder_name: req.body.folder_name,
+        folder_description: req.body.folder_description,
+        documents: req.body.documents,
+      });
+
+
+      // Save health record folder
+      const health_record_folder_saved = await health_record_folder.save();
+
+      // Return success response
+      return apiResponse.successResponseWithData(
+        res,
+        "Health record folder created successfully",
+        health_record_folder_saved
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get health record folders by user
+ * 
+ */
+
+exports.get_health_record_folders_list = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Check if the user exists
+      const user_found = await user_model.findOne({
+        _id: req.user.user._id,
+      });
+
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Get health record folders
+      const health_record_folders = await healthrecords_model.HealthRecordFolder.find({
+        user_id: user_found._id,
+      });
+
+      // Return success response
+      return apiResponse.successResponseWithData(
+        res,
+        "Health record folders fetched successfully",
+        health_record_folders
+      );
+    } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",

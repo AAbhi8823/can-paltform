@@ -30,8 +30,18 @@ const subscriptionPlanSchema = new Schema({
     required: true,
   },
   price: {
-    type: String,
+    type: Number,
     default: 0.0,
+    trim: true,
+  },
+  offer_price: {
+    type: Number,
+    default: 0.0,
+    trim: true,
+  },
+  discount_percent:{
+    type:Number,
+    default:0.0
   },
   duration: {
     type: String,
@@ -39,7 +49,7 @@ const subscriptionPlanSchema = new Schema({
   },
   duration_type: {
     type: String,
-    enum: ["Month", "Year"],
+   //enum: ["Month", "Year"],
     default: "Month",
   },
   description: {
@@ -68,24 +78,24 @@ const subscriptionPlanSchema = new Schema({
     enum: ["Active", "Inactive", "Deleted"],
     default: "Active",
   },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  updated_at: Date,
-  deleted_at: Date,
-  created_by: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  updated_by: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  deleted_by: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
+  // created_at: {
+  //   type: Date,
+  //   default: Date.now,
+  // },
+  // updated_at: Date,
+  // deleted_at: Date,
+  // created_by: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "User",
+  // },
+  // updated_by: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "User",
+  // },
+  // deleted_by: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "User",
+  // },
   deleted: {
     type: Boolean,
     default: false,
@@ -98,26 +108,7 @@ const subscriptionPlanSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  // is_blocked: {
-  //     type: Boolean,
-  //     default: false
-  // },
-  // is_verified: {
-  //     type: Boolean,
-  //     default: false
-  // },
-  // is_email_verified: {
-  //     type: Boolean,
-  //     default: false
-  // },
-  // is_phone_verified: {
-  //     type: Boolean,
-  //     default: false
-  // },
-  // is_admin_verified: {
-  //     type: Boolean,
-  //     default: false
-  // }
+ 
 });
 
 module.exports = mongoose.model("SubscriptionPlan", subscriptionPlanSchema);

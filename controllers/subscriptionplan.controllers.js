@@ -69,29 +69,81 @@ exports.add_subscription_plan = [
       }
 
       console.log("line 91", req.body.duration + " " + req.body.duration_type);
+      /**
+       * Create a new subscription plan save the discount percent from prince and offer price and 
+       * calculate the discount percent and save it in the offer price
+       */
+
+
+      const { price, discount_percent } = req.body;
+
+      // if(!price){
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Validation Error",
+      //     "Price cannot be empty"
+      //   );
+      // }
+      // if(!discount_percent){
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Validation Error",
+      //     "Discount Percent cannot be empty"
+      //   );
+      // }
+
+      if(!price || !discount_percent){
+      if (discount_percent > 100) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          "Discount Percent cannot be greater than 100"
+        );
+      }
+
+      if (price < 0) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          "Price cannot be negative"
+        );
+      }
+      if (discount_percent < 0) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          "Discount Percent cannot be negative"
+        );
+      }
+      if(discount_percent>price){
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          "Discount Percent cannot be greater than Price"
+        );
+      }
+
+
+      }
+
+
+
+      const offer_price_calculated = parseInt((price - (price * discount_percent) / 100))
 
       let subscription_plan = new subscription_plan_model({
         plan_name: req.body.plan_name,
         price: req.body.price,
         duration: req.body.duration + " " + req.body.duration_type,
+        description:req.body.description,
         duration_type: req.body.duration_type,
         description: req.body.description,
         status: req.body.status,
         plan_features: req.body.plan_features,
-        // created_at:req.body.created_at,
-        // updated_at:req.body.updated_at,
-        // deleted_at:req.body.deleted_at,
-        // created_by:req.body.created_by,
-        // updated_by:req.body.updated_by,
-        // deleted_by:req.body.deleted_by,
-        // deleted:req.body.deleted,
-        // is_active:req.body.is_active,
-        // is_deleted:req.body.is_deleted,
-        // is_blocked:req.body.is_blocked,
-        // is_verified:req.body.is_verified,
-        // is_email_verified:req.body.is_email_verified,
-        // is_phone_verified:req.body.is_phone_verified,
-        // is_admin_verified:req.body.is_admin_verified
+        discount_percent: discount_percent,
+        offer_price: offer_price_calculated,
+
+
+        
       });
       const subscription_saved = await subscription_plan.save();
       console.log("line 93", subscription_saved);
@@ -155,7 +207,7 @@ exports.get_subscription_plan_by_id = [
   async (req, res) => {
     try {
       const subscription_plan = await subscription_plan_model
-        .findById(req.params._id)
+        .findById(req.params.subscription_id)
         .select("-duration_type");
       if (subscription_plan) {
         return apiResponse.successResponseWithData(
