@@ -28,6 +28,7 @@ const healthRecordSchema = new Schema(
     CANID: { type: String, required: false },
     doc_id: { type: Number, required: false },
     document_type: { type: String, required: false },
+    document_size:{type:Number,required:false},
     document_name: { type: String, required: false },
     document_url: { type: String, required: false },
     document_date: { type: Date, required: false },

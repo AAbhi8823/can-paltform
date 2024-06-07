@@ -59,17 +59,30 @@ exports.add_health_record = [
         return apiResponse.validationErrorWithData(res, "User not found");
       }
 
+      //check the size of the file and type of the file and store the file in s3 bucket
+      if (req.file.size > 500000) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "File size should not exceed 5MB"
+        );
+      }
+
+     // console.log("line 63", req.file);
+
+
       // Upload document to S3 bucket
       const document_url = await aws.single_file_upload(
         req.file.buffer,
         req.file.originalname
       );
-      console.log("line 64", document_url);
+      //console.log("line 64", document_url);
       // Create new health record
       const health_record = new healthrecords_model({
         user_id: user_found._id,
         doc_id: req.body.doc_id,
         CANID: user_found.CANID,
+        document_type: req.file.mimetype,
+        document_size: req.file.size,
         document_name: req.body.document_name,
         document_url: document_url,
         document_description: req.body.document_description,
