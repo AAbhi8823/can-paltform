@@ -26,6 +26,7 @@ const healthRecordSchema = new Schema(
   {
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: false },
     CANID: { type: String, required: false },
+    doc_id: { type: Number, required: false },
     document_type: { type: String, required: false },
     document_name: { type: String, required: false },
     document_url: { type: String, required: false },

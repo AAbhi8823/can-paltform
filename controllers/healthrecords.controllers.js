@@ -68,6 +68,7 @@ exports.add_health_record = [
       // Create new health record
       const health_record = new healthrecords_model({
         user_id: user_found._id,
+        doc_id: req.body.doc_id,
         CANID: user_found.CANID,
         document_name: req.body.document_name,
         document_url: document_url,
@@ -96,7 +97,7 @@ exports.add_health_record = [
 //===========================GET HEALTH RECORDS API===================================================//
 
 // Get Health records by user
-exports.get_health_records = [
+exports.get_health_records_list_by_user = [
   login_validator,
   async (req, res) => {
     try {
@@ -111,7 +112,8 @@ exports.get_health_records = [
 
       // Get health records
       const health_records = await healthrecords_model.find({
-        user_id: user_found._id,
+       $and: [{ user_id: user_found._id }, { doc_id: req.params.doc_id }],
+
       });
 
       // Return success response
