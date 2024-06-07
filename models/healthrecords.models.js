@@ -41,27 +41,7 @@ const healthRecordSchema = new Schema(
  * this schema will store multiple health records win folder with smae doc name for different
  * user will have to create the folder and then add the document
  */
-const healthRecordFolderSchema = new Schema(
-  {
-    user_id: { type: Schema.Types.ObjectId, ref: "User", required: false },
-    CANID: { type: String, required: false },
-    folder_name: { type: String, required: false },
-    folder_description: { type: String, required: false },
-    folder_date: { type: Date, required: false },
-    documents: [
-      {
-        document_type: { type: String, required: false },
-        document_name: { type: String, required: false },
-        document_url: { type: String, required: false },
-        document_date: { type: Date, required: false },
-        document_description: { type: String, required: false },
-      },
-    ],
-  },
-  { timestamps: true }
-);
 
-module.exports = {
-  HealthRecord: mongoose.model("HealthRecord", healthRecordSchema),
-  HealthRecordFolder: mongoose.model("HealthRecordFolder", healthRecordFolderSchema),
-};
+
+
+module.exports = mongoose.model("HealthRecord", healthRecordSchema);

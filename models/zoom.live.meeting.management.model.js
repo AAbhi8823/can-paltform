@@ -23,4 +23,23 @@ const meetingSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-module.exports = mongoose.model("Meeting", meetingSchema);
+
+// schema for storing access tokens
+
+const accessTokenSchema = new mongoose.Schema(
+  {
+    access_token: { type: String, required: true },
+    refresh_token: { type: String, required: true },
+    token_type: { type: String, required: true },
+    expires_at: { type: Number, required: true },
+    scope: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  {
+    timestamps: true,
+  }
+);
+module.exports = {
+  Meeting: mongoose.model("Meeting", meetingSchema),
+  AccessToken: mongoose.model("AccessToken", accessTokenSchema),
+};

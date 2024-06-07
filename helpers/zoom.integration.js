@@ -15,7 +15,7 @@ const axios = require("axios");
 const api_base_url= "https://api.zoom.us/v2";
 const auth_token_url = "https://zoom.us/oauth/token";
 
-async function add_meeting(topic, duration, start_time) {
+async function createMeeting(topic, duration, start_time) {
   try {
     const authResponse = await axios.post(
       auth_token_url,
@@ -38,6 +38,7 @@ async function add_meeting(topic, duration, start_time) {
     }
 
     const access_token = authResponse.data.access_token;
+    console.log("line 52",access_token);
 
     const headers = {
       Authorization: `Bearer ${access_token}`,
@@ -160,4 +161,4 @@ async function add_meeting(topic, duration, start_time) {
 // }
 
 
-module.exports = {add_meeting};
+module.exports = {createMeeting};
