@@ -12,7 +12,7 @@ const router = require('express').Router();
 //const zoom_meeting_controller = require('../Zoom/zoom.live.meeting.management.controllers');
 //const zoom_controller = require('../Zoom/zoom.live.meeting.management.controllers');
 
-const zoom_controller = require('../helpers/zoom.integration')
+const zoom_controller = require('../controllers/zoom.controllers')
 
 
 
@@ -26,7 +26,7 @@ const zoom_controller = require('../helpers/zoom.integration')
 
 
 //test routes
-router.post("/add-meeting", zoom_controller.add_meeting);
+router.post("/create-meeting", zoom_controller.create_meeting);
 // router.post('/oauth-meeting', zoom_controller.auth_meeting);
 
 module.exports=router;

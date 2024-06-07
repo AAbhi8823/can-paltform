@@ -268,3 +268,34 @@ exports.update_subscription_plan = [
     }
   },
 ];
+
+//API to delete subscription plan
+
+exports.delete_subscription_plan = [
+  async (req, res) => {
+    try {
+      const subscription_plan = await subscription_plan_model.findById(
+        req.params.subscription_id
+      );
+      if (subscription_plan) {
+        const deleted_subscription_plan =
+          await subscription_plan_model.findByIdAndDelete(
+            req.params.subscription_id
+          );
+        return apiResponse.successResponseWithData(
+          res,
+          "Subscription Plan Deleted Successfully",
+          deleted_subscription_plan
+        );
+      } else {
+        return apiResponse.notFoundResponse(res, "No Subscription Plan Found");
+      }
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
