@@ -15,6 +15,17 @@ router.put("/change-password",user_controllers.change_password)
 router.get("/get-blocked-users",user_controllers.get_blocked_users)
 router.get("/get-users-list-by-admin",user_controllers.get_users_list_by_admin)
 
+//User Details Raoutes For Admin Dashboard
+router.get("/get-total-users",user_controllers.get_total_users_by_admin)
+router.get("/get-total-active-users",user_controllers.get_total_active_users_by_admin)
+//router.get("/get-total-inactive-users",user_controllers.get_total_inactive_users)
+router.get("/get-total-blocked-users",user_controllers.get_total_blocked_users_by_admin)
+router.get("/get-total-fighter",user_controllers.get_total_fighters_users_by_admin)
+router.get("/get-tolal-caregivers",user_controllers.get_total_caregivers_users_by_admin)
+router.get("/get-total-vaterans",user_controllers.get_total_veterans_users_by_admin)
+
+
+
 //Password reset
 //router.post("/reset-password",user_controllers.reset_password)
 //router.post("/user-password-reset-pin",user_controllers.reset_password_pin)

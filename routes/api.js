@@ -14,7 +14,8 @@ const mystoryRoutes=require("./mystory.routes")
 const meetingRoutes=require("./zoom.live.meeting.management.routes")
 const commentsRoutes=require("./comment.routes")
 //const saveMystoryroutes=require("./saved.routes")
-const feedbackRoutes=require("./feedback.routes")   
+const feedbackRoutes=require("./feedback.routes")  
+const ticketRoutes=require("./ticket.management.routes") 
 
 
 //Middlewares
@@ -31,6 +32,8 @@ app.use("/meeting",meetingRoutes)
 app.use("/comments",commentsRoutes)
 //app.use("/savedstory",saveMystoryroutes)
 app.use("/feedback",feedbackRoutes)
+
+app.use("/ticket",ticketRoutes)
 
 
 module.exports=app

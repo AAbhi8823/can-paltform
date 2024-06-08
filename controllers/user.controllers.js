@@ -1828,3 +1828,201 @@ exports.get_users_list_by_admin = [
     }
   },
 ];
+
+/**
+ * Get total numbers of users by admin
+ */
+
+exports.get_total_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find().countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get total numbers of blocked users by admin
+ */
+
+exports.get_total_blocked_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find({ isBlocked: true }).countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of blocked users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get total numbers of active users by admin
+ */
+
+exports.get_total_active_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find({ isBlocked: false }).countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of active users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get total numbers of fighters users by admin
+ */
+
+exports.get_total_fighters_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find({ "user_profile": "Fighter" }).countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of fighters users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get total numbers of caregivers users by admin
+ */
+
+exports.get_total_caregivers_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find({ "user_profile": "Caregiver" }).countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of caregivers users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get total numbers of veterans users by admin
+ */
+
+exports.get_total_veterans_users_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model.find({ "user_profile": "Veteran" }).countDocuments();
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of veterans users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
