@@ -163,7 +163,8 @@ exports.delete_health_record = [
       // Check if the health record exists
       const health_record = await healthrecords_model.findOneAndDelete({
         _id: req.params.healthrecord_id,
-        user_id: user_found._id,
+        user_id: req.user.user._id,
+        doc_id: req.params.doc_id,
       });
 
       if (!health_record) {
