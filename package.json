@@ -33,7 +33,8 @@
     "multer-s3": "^3.0.1",
     "node-sass": "^9.0.0",
     "nodemailer": "^6.9.13",
-    "twilio": "^4.20.0"
+    "twilio": "^4.20.0",
+    "zoomus": "^0.1.4"
   },
   "devDependencies": {
     "eslint": "^8.56.0",

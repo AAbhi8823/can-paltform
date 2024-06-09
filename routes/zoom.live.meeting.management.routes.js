@@ -23,10 +23,12 @@ const zoom_controller = require('../controllers/zoom.controllers')
 // router.put('/meeting', addToken, updateMeeting);
 // router.delete('/meeting', addToken, deleteMeeting);
 
+router.post('/add-meeting', zoom_controller.create_meeting);
+
 
 
 //test routes
-router.post("/create-meeting", zoom_controller.create_meeting);
+//router.post("/create-meeting", zoom_controller.create_meeting);
 // router.post('/oauth-meeting', zoom_controller.auth_meeting);
 
 module.exports=router;

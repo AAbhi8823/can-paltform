@@ -25,6 +25,9 @@ router.get('/get-saved-story/:saved_story_id', saved_mystory_controller.get_save
 
 router.delete("/delete-story/:story_id", mystory_controller.delete_story);
 
+//Admin Dashboard Routes
+router.get('/get-total-stories', mystory_controller.get_total_active_mystory);
+
 
 
 

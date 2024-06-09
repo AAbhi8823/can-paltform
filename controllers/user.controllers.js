@@ -175,14 +175,20 @@ exports.add_user = [
         });
 
         console.log("line 172", user_found);
+        if(user_found.phone_number == phone_number){
+          return res.status(409).json({
+            status:false,
+            message:`User already exists with phone number: ${phone_number}`
+          })
+        }
 
-        // if(user_found.email){
-        //   return res.status(409).json({
-        //     status:false,
-        //     message:`${user_found.email} is already registered.`
+        if(user_found.email == email){
+          return res.status(409).json({
+            status:false,
+            message:`User already exists with email: ${email}}`
 
-        //   })
-        // }
+          })
+        }
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
@@ -673,6 +679,13 @@ exports.login_user = [
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_TOKEN_EXPIRY,
       });
+      /**
+       * after login user and verify the user upadte isLive status to true
+       * and on logout update the isLive status to false
+       */
+      user_found.isLive = true;
+      await user_found.save();
+
       //Save the token in the user model first remove the last token from the list then add the new token
 
       if (user_found.jwtTokenBlockedList.length > 0) {
@@ -690,6 +703,38 @@ exports.login_user = [
     } catch (err) {
       console.log(err);
       // Handle the error and send an appropriate response
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+//Logout user
+
+exports.logout_user = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the user
+      const user_found = await user_model.findById(req.user.user._id);
+      if (!user_found) {
+        return apiResponse.notFoundResponse(res, "User not found");
+      }
+
+      // Update the user
+      user_found.isLive = false;
+      await user_found.save();
+      //remove the token from the list
+      user_found.jwtTokenBlockedList.pop();
+      await user_found.save();
+
+      // Send the response
+      return apiResponse.successResponse(res, "Successfully logged out");
+    } catch (err) {
+      console.log(err);
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
@@ -1509,7 +1554,10 @@ exports.block_user_profile = [
     try {
       // Check if req.user is set
       if (!req.user.user || !req.user.user._id) {
-        return apiResponse.validationErrorWithData(res, "Authentication required");
+        return apiResponse.validationErrorWithData(
+          res,
+          "Authentication required"
+        );
       }
 
       // Get the authenticated user ID
@@ -1517,7 +1565,10 @@ exports.block_user_profile = [
 
       // Check if the user is trying to block themselves
       if (authenticatedUserId === req.body.user_id) {
-        return apiResponse.validationErrorWithData(res, "You cannot block yourself");
+        return apiResponse.validationErrorWithData(
+          res,
+          "You cannot block yourself"
+        );
       }
 
       // Fetch the user to be blocked/unblocked
@@ -1574,27 +1625,36 @@ exports.block_user_profile = [
 
       return apiResponse.successResponseWithData(res, message, userResponse);
     } catch (err) {
-      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
   },
 ];
 /**
  * Get blocked users API for the authenticated user
  */
-exports.get_blocked_users= [
+exports.get_blocked_users = [
   login_validator,
   async (req, res) => {
     try {
       // Check if req.user is set
       if (!req.user.user || !req.user.user._id) {
-        return apiResponse.validationErrorWithData(res, "Authentication required");
+        return apiResponse.validationErrorWithData(
+          res,
+          "Authentication required"
+        );
       }
 
       // Get the authenticated user ID
       const authenticatedUserId = req.user.user._id.toString();
 
       // Fetch the authenticated user's profile
-      const user_profile = await user_model.findOne({ _id: authenticatedUserId });
+      const user_profile = await user_model.findOne({
+        _id: authenticatedUserId,
+      });
 
       // Check if the user's profile exists
       if (!user_profile) {
@@ -1607,19 +1667,30 @@ exports.get_blocked_users= [
       }
 
       // Get the list of blocked users
-      const blockedUsers = user_profile.blockedTo.map((blockedUser) => blockedUser.user_id);
+      const blockedUsers = user_profile.blockedTo.map(
+        (blockedUser) => blockedUser.user_id
+      );
       console.log("line 80", blockedUsers);
 
       // Fetch the details of the blocked users
-      const blockedUsersDetails = await user_model.find({ _id: { $in: blockedUsers } }).select("full_name profile_image user_profile");
+      const blockedUsersDetails = await user_model
+        .find({ _id: { $in: blockedUsers } })
+        .select("full_name profile_image user_profile");
       // Send the response
-      return apiResponse.successResponseWithData(res, "List of blocked users", blockedUsersDetails);
+      return apiResponse.successResponseWithData(
+        res,
+        "List of blocked users",
+        blockedUsersDetails
+      );
     } catch (err) {
-      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
   },
 ];
-
 
 /**
  * Get user profile API
@@ -1793,10 +1864,8 @@ exports.get_user_by_id = [
   },
 ];
 
-
-
 /**
- * Get users list by admin 
+ * Get users list by admin
  */
 exports.get_users_list_by_admin = [
   login_validator,
@@ -1813,11 +1882,7 @@ exports.get_users_list_by_admin = [
         return apiResponse.validationErrorWithData(res, "Users not found");
       }
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Users list",
-        users_list
-      );
+      return apiResponse.successResponseWithData(res, "Users list", users_list);
     } catch (err) {
       console.log("line 80", err);
       return apiResponse.serverErrorResponse(
@@ -1872,7 +1937,9 @@ exports.get_total_blocked_users_by_admin = [
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model.find({ isBlocked: true }).countDocuments();
+      const users_list = await user_model
+        .find({ isBlocked: true })
+        .countDocuments();
 
       // Check if the users list exists
       if (!users_list) {
@@ -1905,7 +1972,9 @@ exports.get_total_active_users_by_admin = [
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model.find({ isBlocked: false }).countDocuments();
+      const users_list = await user_model
+        .find({ isBlocked: false })
+        .countDocuments();
 
       // Check if the users list exists
       if (!users_list) {
@@ -1938,7 +2007,9 @@ exports.get_total_fighters_users_by_admin = [
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model.find({ "user_profile": "Fighter" }).countDocuments();
+      const users_list = await user_model
+        .find({ user_profile: "Fighter" })
+        .countDocuments();
 
       // Check if the users list exists
       if (!users_list) {
@@ -1971,7 +2042,9 @@ exports.get_total_caregivers_users_by_admin = [
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model.find({ "user_profile": "Caregiver" }).countDocuments();
+      const users_list = await user_model
+        .find({ user_profile: "Caregiver" })
+        .countDocuments();
 
       // Check if the users list exists
       if (!users_list) {
@@ -2004,7 +2077,9 @@ exports.get_total_veterans_users_by_admin = [
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model.find({ "user_profile": "Veteran" }).countDocuments();
+      const users_list = await user_model
+        .find({ user_profile: "Veteran" })
+        .countDocuments();
 
       // Check if the users list exists
       if (!users_list) {
@@ -2014,6 +2089,92 @@ exports.get_total_veterans_users_by_admin = [
       return apiResponse.successResponseWithData(
         res,
         "Total numbers of veterans users",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get Total Numbers of Users gender wise in percentage by admin
+ * This API will fecth the all the users male and females but in response it will return the percentage
+ */
+
+exports.get_perecentage_user_gender_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const total_male_users = await user_model
+        .find({
+          gender: "male",
+        })
+        .countDocuments();
+      console.log("line 80", total_male_users);
+      const total_female_users = await user_model
+        .find({
+          gender: "female",
+        })
+        .countDocuments();
+      const total_users = await user_model.find().countDocuments();
+
+      //Now calculate the percentage for each genders
+      const male_percentage = Number(
+        ((total_male_users / total_users) * 100).toFixed(2)
+      );
+      const female_percentage = Number(
+        ((total_female_users / total_users) * 100).toFixed(2)
+      );
+      const response = {
+        male_percentage: male_percentage,
+        female_percentage: female_percentage,
+      };
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Percentage of users fetch sucessfully!",
+        response
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+
+//Get Total live users number by admin
+
+exports.get_total_live_users_by_admin = [
+  // login_validator,
+  // admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model
+        .find({ isLive: true })
+        .countDocuments();
+
+      // Check if the users list exists
+      // if (!users_list) {
+      //   return apiResponse.validationErrorWithData(res, "Users not found");
+      // }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Total numbers of live users",
         users_list
       );
     } catch (err) {
