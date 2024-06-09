@@ -380,3 +380,25 @@ exports.get_story_by_filter = [
     }
   },
 ];
+
+//Get Total number Active Mystory
+
+exports.get_total_active_mystory = [
+  //login_validator,
+  async (req, res) => {
+    try {
+      const mystory = await mystory_model.find({  }).countDocuments();
+      return apiResponse.successResponseWithData(
+        res,
+        "Total Active Mystory",
+        mystory
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];

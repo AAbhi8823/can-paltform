@@ -8,6 +8,7 @@ const user_controllers=require("../controllers/user.controllers")
 router.post("/user-register",user_controllers.add_user)
 router.post("/verify-user",user_controllers.verify_user)
 router.post("/user-login",user_controllers.login_user)
+router.post("/user-logout",user_controllers.logout_user)
 router.get("/get-user-profile",user_controllers.get_user_profile)
 router.put("/update-user-profile",user_controllers.update_user_profile)
 router.get("/get-user-by-id/:user_id",user_controllers.get_user_by_id)
@@ -23,6 +24,10 @@ router.get("/get-total-blocked-users",user_controllers.get_total_blocked_users_b
 router.get("/get-total-fighter",user_controllers.get_total_fighters_users_by_admin)
 router.get("/get-tolal-caregivers",user_controllers.get_total_caregivers_users_by_admin)
 router.get("/get-total-vaterans",user_controllers.get_total_veterans_users_by_admin)
+
+router.get("/get-total-live-users",user_controllers.get_total_live_users_by_admin)
+//Admin Routes
+router.get("/get-users-percentage",user_controllers.get_perecentage_user_gender_by_admin)
 
 
 
@@ -41,6 +46,8 @@ router.post("/user-password-reset",user_controllers.user_forgot_password)
 
 //router.post("/rest-password/:id/:token ",user_controllers.reset_password)
 router.post("/reset-password",user_controllers.reset_password)
+
+
 
 
 
