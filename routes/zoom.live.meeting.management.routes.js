@@ -23,7 +23,8 @@ const zoom_controller = require('../controllers/zoom.controllers')
 // router.put('/meeting', addToken, updateMeeting);
 // router.delete('/meeting', addToken, deleteMeeting);
 
-router.post('/add-meeting', zoom_controller.create_meeting);
+router.post('/add-meeting', zoom_controller.create_meeting)
+router.get("/get-meeting-list", zoom_controller.get_meetings_list)
 
 
 
