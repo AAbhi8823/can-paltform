@@ -14,7 +14,7 @@ const zoom = require("../helpers/zoom.integration");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
 
-  const Meeting = require('../models/zoom.live.meeting.management.model');
+const Meeting = require("../models/zoom.live.meeting.management.model");
 
 /**
  * Create a new Zoom meeting
@@ -70,22 +70,31 @@ exports.create_meeting = [
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return apiResponse.validationErrorWithData(res, "Validation Error", errors.array());
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          errors.array()
+        );
       }
 
-      const { topic, type, start_time, duration, timezone, password } = req.body;
+      const { topic, type, start_time, duration, timezone, password } =
+        req.body;
       const user_id = req.user.user._id;
 
       const user = await user_model.findById(user_id);
       if (!user) {
-        return res.status(404).json({ status: false, message: "User not found" });
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
       }
 
       const payload = { topic, type, start_time, duration, timezone, password };
 
       const response = await createMeeting(payload);
       if (!response || !response.id) {
-        return res.status(500).json({ status: false, message: "Unable to create meeting" });
+        return res
+          .status(500)
+          .json({ status: false, message: "Unable to create meeting" });
       }
 
       const new_meeting = new zoom_model({
@@ -102,25 +111,42 @@ exports.create_meeting = [
 
       await new_meeting.save();
 
-      return res.status(201).json({ status: true, message: "Meeting created successfully", data: new_meeting });
+      return res.status(201).json({
+        status: true,
+        message: "Meeting created successfully",
+        data: new_meeting,
+      });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({ status: false, message: "Server Error...!", error: err.message });
+      return res.status(500).json({
+        status: false,
+        message: "Server Error...!",
+        error: err.message,
+      });
     }
   },
 ];
 
 // // Helper function to create a Zoom meeting
-async function createMeeting({ topic, type, start_time, duration, timezone, password }) {
+async function createMeeting({
+  topic,
+  type,
+  start_time,
+  duration,
+  timezone,
+  password,
+}) {
   try {
     const authResponse = await axios.post(
       auth_token_url,
       `grant_type=client_credentials`,
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${zoom_credentials.client_id}:${zoom_credentials.client_secret}`).toString('base64')}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${zoom_credentials.client_id}:${zoom_credentials.client_secret}`
+          ).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
       }
     );
 
@@ -128,8 +154,10 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
       console.error("Unable to get access token", authResponse.data);
       return null;
     }
+    console.log("Auth Response",authResponse.data.access_token);
 
-    const access_token ="eyJzdiI6IjAwMDAwMSIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6IjY4ODE0OTM3LTY2MWQtNDIyNC04NjNlLWZkYTYyNWZlNzk3NSJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJubThtdEpRSlEwaWY1UlNGRlp4bEtBIiwidmVyIjo5LCJhdWlkIjoiYzJiM2I3ZWUwNjNkNzg3Nzk3Y2UzZGI4Y2M1YzNmYjMiLCJuYmYiOjE3MTc5Mjc4NzksImNvZGUiOiIyUVEzR0xselQybWxQRVFrTElFWEpBU0FDeFJuVGZ5dEsiLCJpc3MiOiJ6bTpjaWQ6SlUxYjBDRFdScTJfcFFJSnFxMExOdyIsImdubyI6MCwiZXhwIjoxNzE3OTMxNDc5LCJ0eXBlIjozLCJpYXQiOjE3MTc5Mjc4NzksImFpZCI6Ikp6NkxDcXJ3UWhhX0lRMV9LWGRvQVEifQ.V4IsXZ_jnWZ1lTYizs4tiV1rUSzNCraUmTgEGpSA98AxTRZM7PiRhSAYAL72ULqxYYlH8o66kZY9JmY_k9m11g"// authResponse.data.access_token;
+    const access_token ="eyJzdiI6IjAwMDAwMSIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6IjE3ZTQyNzkxLTAzYTgtNGUzMy04NTM2LTY4Zjg0ZmU4YTdjZCJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJubThtdEpRSlEwaWY1UlNGRlp4bEtBIiwidmVyIjo5LCJhdWlkIjoiYzJiM2I3ZWUwNjNkNzg3Nzk3Y2UzZGI4Y2M1YzNmYjMiLCJuYmYiOjE3MTc5MzE2MjQsImNvZGUiOiJ3a1VKd0xrTVFadW1TSXdJbU1jVmRnRFc4OEQzSnY2TWciLCJpc3MiOiJ6bTpjaWQ6SlUxYjBDRFdScTJfcFFJSnFxMExOdyIsImdubyI6MCwiZXhwIjoxNzE3OTM1MjI0LCJ0eXBlIjozLCJpYXQiOjE3MTc5MzE2MjQsImFpZCI6Ikp6NkxDcXJ3UWhhX0lRMV9LWGRvQVEifQ.zB--Cl8loVWMWFQUh_lMvloyaxt6jWoGUdLUrqyzcVN5XjsrD347GGzI6ms72TzAbYJi0IcXCkLFRlMaKVJpsw"
+      // authResponse.data.access_token;
     console.log("Access Token", access_token);
     const headers = {
       Authorization: `Bearer ${access_token}`,
@@ -156,3 +184,22 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
   }
 }
 
+// Get all list Zoom meetings
+
+exports.get_meetings_list = [
+  async (req, res) => {
+    try {
+      const meetings = await Meeting.find();
+      return res.status(200).json({
+        status: true,
+        message: "Meetings list",
+        data: meetings,
+      });
+    } catch (err) {
+      console.error(err.message);
+      res
+        .status(500)
+        .json({ status: false, msg: "Server error", error: err.message });
+    }
+  },
+];
