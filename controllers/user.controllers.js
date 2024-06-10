@@ -1162,6 +1162,11 @@ exports.user_forgot_password = [
       const token = await bcrypt.hash(jwt_token, 10);
       console.log("line 1386", token);
       const reset_link = `http://35.154.186.54/api/v1/user/reset-password?token=${token}&id=${user_found._id}`; //`${process.env.CLIENT_URL}/api/v1/reset-password/${user_found._id}/${token}`;
+    
+    // Now send the reset link to the email emebeded with the token in html form page for pasword and confirm_password then send to email
+
+    
+
 
       //const reset_token = await helpers.generateResetToken(reset_link);
       ///console.log("line 598", reset_token);
