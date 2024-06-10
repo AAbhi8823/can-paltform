@@ -174,21 +174,24 @@ exports.add_user = [
           ],
         });
 
-        console.log("line 172", user_found);
-        // if(user_found.phone_number == phone_number){
-        //   return res.status(409).json({
-        //     status:false,
-        //     message:`User already exists with phone number: ${phone_number}`
-        //   })
-        // }
+        // console.log("line 172", user_found.phone_number,phone_number);
+        // console.log("line 178", user_found.phone_number == phone_number);
+       if(user_found){
+        if(user_found.phone_number == phone_number){
+          return res.status(409).json({
+            status:false,
+            message:`User already exists with phone number: ${phone_number}`
+          })
+        }
 
-        // if(user_found.email == email){
-        //   return res.status(409).json({
-        //     status:false,
-        //     message:`User already exists with email: ${email}}`
+        if(user_found.email == email){
+          return res.status(409).json({
+            status:false,
+            message:`User already exists with email: ${email}}`
 
-        //   })
-        // }
+          })
+        }
+       }
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
