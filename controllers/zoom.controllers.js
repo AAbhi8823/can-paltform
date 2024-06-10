@@ -154,9 +154,10 @@ async function createMeeting({
       console.error("Unable to get access token", authResponse.data);
       return null;
     }
-    console.log("Auth Response",authResponse.data.access_token);
+    console.log("Auth Response",authResponse.data);
 
-    const access_token ="eyJzdiI6IjAwMDAwMSIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6IjE3ZTQyNzkxLTAzYTgtNGUzMy04NTM2LTY4Zjg0ZmU4YTdjZCJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJubThtdEpRSlEwaWY1UlNGRlp4bEtBIiwidmVyIjo5LCJhdWlkIjoiYzJiM2I3ZWUwNjNkNzg3Nzk3Y2UzZGI4Y2M1YzNmYjMiLCJuYmYiOjE3MTc5MzE2MjQsImNvZGUiOiJ3a1VKd0xrTVFadW1TSXdJbU1jVmRnRFc4OEQzSnY2TWciLCJpc3MiOiJ6bTpjaWQ6SlUxYjBDRFdScTJfcFFJSnFxMExOdyIsImdubyI6MCwiZXhwIjoxNzE3OTM1MjI0LCJ0eXBlIjozLCJpYXQiOjE3MTc5MzE2MjQsImFpZCI6Ikp6NkxDcXJ3UWhhX0lRMV9LWGRvQVEifQ.zB--Cl8loVWMWFQUh_lMvloyaxt6jWoGUdLUrqyzcVN5XjsrD347GGzI6ms72TzAbYJi0IcXCkLFRlMaKVJpsw"
+    let access_token =
+    "eyJzdiI6IjAwMDAwMSIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6ImRjZTU3NWFlLWEwMWItNGEzMC05Mjc3LTI3NTM1OWE0NWEzOCJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJubThtdEpRSlEwaWY1UlNGRlp4bEtBIiwidmVyIjo5LCJhdWlkIjoiYzJiM2I3ZWUwNjNkNzg3Nzk3Y2UzZGI4Y2M1YzNmYjMiLCJuYmYiOjE3MTc5OTUwOTEsImNvZGUiOiIwZVFJY0lkaVFUQzgxcFZHMkt2b2x3a0F4RnE3SWxkMlUiLCJpc3MiOiJ6bTpjaWQ6SlUxYjBDRFdScTJfcFFJSnFxMExOdyIsImdubyI6MCwiZXhwIjoxNzE3OTk4NjkxLCJ0eXBlIjozLCJpYXQiOjE3MTc5OTUwOTEsImFpZCI6Ikp6NkxDcXJ3UWhhX0lRMV9LWGRvQVEifQ.SIFXgxqGT2IcX_jgxzV6r_ntXfQcr1Z79KENC9_aDMC0E7uz5UYTYS544Lx-VvhTnOFyz7yqGFTTRWTyUb1DiQ"
       // authResponse.data.access_token;
     console.log("Access Token", access_token);
     const headers = {
