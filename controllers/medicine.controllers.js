@@ -113,21 +113,17 @@ exports.add_medicine = [
 
 exports.update_medicine = [
   login_validator,
-  // check("medicine_name").notEmpty().withMessage("Medicine name can not be empty"),
-  // check("medicine_type").notEmpty().withMessage("Medicine type can not be empty"),
-  // check("medicine_dosage")
-  //   .notEmpty()
-  //   .withMessage("Medicine dosage  can not be empty"),
+  // Uncomment the validation lines as needed
+  // check("medicine_name").notEmpty().withMessage("Medicine name cannot be empty"),
+  // check("medicine_type").notEmpty().withMessage("Medicine type cannot be empty"),
+  // check("medicine_dosage").notEmpty().withMessage("Medicine dosage cannot be empty"),
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Validation Error",
-          errors.array()
-        );
+        return apiResponse.validationErrorWithData(res, "Validation Error", errors.array());
       }
+
       const {
         medicine_name,
         medicine_type,
@@ -137,47 +133,45 @@ exports.update_medicine = [
         medicine_stop_date,
         time_for_reminder,
         isReminderSet,
-        add_note,
+        add_note
       } = req.body;
 
-      const medicine = await medicine_controller.findOneAndUpdate(
-        { _id: req.body.medicine_id, user_id: req.user.user._id },
+      const user_id = req.user.user._id;
+      const medicine_id = req.body.medicine_id;
+
+      console.log("line 36", medicine_id, user_id);
+
+      const medicine = await medicine_model.findOneAndUpdate(
+        { user_id: user_id, "medicines._id": medicine_id },
         {
           $set: {
-            user_id: req.user.user._id,
-            CANID: req.user.user.CANID,
-            medicine_name,
-            medicine_type,
-            medicine_dosage,
-
-            meal,
-            time_for_reminder,
-            medicine_start_date,
-            medicine_stop_date,
-            isReminderSet,
-            add_note,
-          },
+            "medicines.$.CANID": req.user.user.CANID,
+            "medicines.$.medicine_name": medicine_name,
+            "medicines.$.medicine_type": medicine_type,
+            "medicines.$.medicine_dosage": medicine_dosage,
+            "medicines.$.meal": meal,
+            "medicines.$.time_for_reminder": time_for_reminder,
+            "medicines.$.medicine_start_date": medicine_start_date,
+            "medicines.$.medicine_stop_date": medicine_stop_date,
+            "medicines.$.isReminderSet": isReminderSet,
+            "medicines.$.add_note": add_note
+          }
         },
         { new: true }
       );
+
       if (!medicine) {
         return apiResponse.validationErrorWithData(res, "Medicine not found");
       }
-      return apiResponse.successResponseWithData(
-        res,
-        "Medicine updated successfully",
-        medicine
-      );
+
+      return apiResponse.successResponseWithData(res, "Medicine updated successfully", medicine);
     } catch (err) {
       console.log(err);
-      return apiResponse.serverErrorResponse(
-        res,
-        "Server Error...!",
-        err.message
-      );
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
     }
-  },
+  }
 ];
+
 
 /**
  * Delete Medicine API
@@ -277,7 +271,7 @@ exports.get_medicine_list = [
  * This api will be get the medicine details
  */
 
-exports.get_medicine_details = [
+exports.get_medicine_details_by_id = [
   login_validator,
   check("medicine_id").notEmpty().withMessage("Medicine id can not be empty"),
   async (req, res) => {
@@ -291,8 +285,9 @@ exports.get_medicine_details = [
         );
       }
 
-      const medicine = await medicine_controller.findOne({
-        _id: req.body.medicine_id,
+      const medicine = await medicine_model.findOne({
+       user_id: req.user.user._id,
+        "medicines._id": req.params.medicine_id
       });
       if (!medicine) {
         return apiResponse.validationErrorWithData(res, "Medicine not found");
