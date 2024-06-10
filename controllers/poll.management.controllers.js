@@ -29,7 +29,7 @@ exports.create_poll = [
         poll_end_date,
       });
       const new_poll = await poll.save();
-      return apiResponse.successResponse(
+      return apiResponse.successResponseWithData(
         res,
         "Poll created successfully",
         new_poll
@@ -67,7 +67,7 @@ exports.update_poll = [
       poll.poll_options = poll_options;
       poll.poll_end_date = poll_end_date;
       const updated_poll = await poll.save();
-      return apiResponse.successResponse(
+      return apiResponse.successResponseWithData(
         res,
         "Poll updated successfully",
         updated_poll
@@ -102,8 +102,11 @@ exports.delete_poll_by_id = [
 exports.get_poll_list = [
   async (req, res) => {
     try {
-      const polls = await poll_model.find();
-      return apiResponse.successResponse(
+      const polls = await poll_model.find({
+
+      });
+      console.log("line 108",polls);
+      return apiResponse.successResponseWithData(
         res,
         "Polls fetched successfully",
         polls
