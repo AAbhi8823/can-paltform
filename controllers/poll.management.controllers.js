@@ -216,7 +216,7 @@ exports.get_poll_results = [
         }
   
         // Calculate the votes and include voter profile images
-        const results = poll.poll_options.map((option) => ({
+        let results = poll.poll_options.map((option) => ({
           option: option.option,
           votes: option.votes.map(voter => ({
             _id: voter._id,
@@ -224,9 +224,19 @@ exports.get_poll_results = [
             profile_image: voter.profile_image
           })),
           vote_count: option.votes.length,
-          total_users: poll.poll_options.reduce((acc, cur) => acc + cur.votes.length, 0),
+         
         }));
-  
+        //now count total vote count in poll and add to the results by name total_users
+
+        results.total_users = poll.poll_options.reduce((acc, option) => acc + option.votes.length, 0);
+        // poll.total_users = results.total_users;
+        // await poll.save();
+        results={
+            total_users:poll.total_users,
+            poll_results:results
+        }
+       
+       
         return apiResponse.successResponseWithData(res, "Poll results", results);
       } catch (err) {
         return res.status(500).json({

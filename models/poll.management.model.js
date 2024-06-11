@@ -24,7 +24,14 @@ const pollSchema = new Schema(
       enum: ["Active", "Inactive"],
       default: "Active",
     },
+    total_users:{
+        type: Number,
+        default: 0,
   },
+},
+ 
+ 
+
   { timestamps: true }
 );
 
