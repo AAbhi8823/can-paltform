@@ -203,26 +203,36 @@ exports.vote_poll_option = [
 
 //Get Poll Results
 exports.get_poll_results = [
-  async (req, res) => {
-    try {
-      const poll = await poll_model.findById(req.params.poll_id);
-      if (!poll) {
-        return apiResponse.notFoundResponse(res, "Poll not found");
+    async (req, res) => {
+      try {
+        // Find the poll by ID and populate the votes field
+        const poll = await poll_model.findById(req.params.poll_id).populate({
+          path: 'poll_options.votes',
+          select: 'profile_image name', // Select only necessary fields
+        });
+  
+        if (!poll) {
+          return apiResponse.notFoundResponse(res, "Poll not found");
+        }
+  
+        // Calculate the votes and include voter profile images
+        const results = poll.poll_options.map((option) => ({
+          option: option.option,
+          votes: option.votes.map(voter => ({
+            _id: voter._id,
+            name: voter.name,
+            profile_image: voter.profile_image
+          })),
+          vote_count: option.votes.length,
+        }));
+  
+        return apiResponse.successResponseWithData(res, "Poll results", results);
+      } catch (err) {
+        return res.status(500).json({
+          status: false,
+          message: "Server Error...!",
+          error: err.message,
+        });
       }
-
-      // Calculate the votes
-      const results = poll.poll_options.map((option) => ({
-        option: option.option,
-        votes: option.votes.length,
-      }));
-
-      return apiResponse.successResponseWithData(res, "Poll results", results);
-    } catch (err) {
-      return res.status(500).json({
-        status: false,
-        message: "Server Error...!",
-        error: err.message,
-      });
-    }
-  },
-];
+    },
+  ];
