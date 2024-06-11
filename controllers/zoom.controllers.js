@@ -16,6 +16,8 @@ const login_validator =
 
 const Meeting = require("../models/zoom.live.meeting.management.model");
 
+const qs = require('qs');
+
 /**
  * Create a new Zoom meeting
  * @param {Object} req - Request object
@@ -184,6 +186,34 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
     return null;
   }
 }
+
+
+
+
+const getZoomToken = async () => {
+  try {
+    const tokenUrl = 'https://zoom.us/oauth/token';
+    const account_id = process.env.ZOOM_ACCOUNT_ID;
+    
+    const auth = Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString('base64');
+    
+    const response = await axios.post(tokenUrl, qs.stringify({
+      grant_type: 'account_credentials',
+      account_id: account_id
+    }), {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    return response.data.access_token;
+  } catch (error) {
+    console.error('Error generating Zoom token:', error.response ? error.response.data : error.message);
+    throw new Error('Failed to generate Zoom token');
+  }
+};
+
 // Get all list Zoom meetings
 
 exports.get_meetings_list = [
