@@ -33,12 +33,12 @@ exports.add_mystory = [
       }
 
       const { user_id, post_title, post_description, media_files } = req.body;
-      if (!post_title) {
-        return apiResponse.validationErrorWithData(
-          res,
-          "Post Title is required"
-        );
-      }
+      // if (!post_title) {
+      //   return apiResponse.validationErrorWithData(
+      //     res,
+      //     "Post Title is required"
+      //   );
+      // }
 
       //uploading media files to s3 bucket
       const media_files_url = await awsS3.multiple_file_upload(req.files);

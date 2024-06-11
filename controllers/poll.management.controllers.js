@@ -102,10 +102,8 @@ exports.delete_poll_by_id = [
 exports.get_poll_list = [
   async (req, res) => {
     try {
-      const polls = await poll_model.find({
-
-      });
-      console.log("line 108",polls);
+      const polls = await poll_model.find({});
+      console.log("line 108", polls);
       return apiResponse.successResponseWithData(
         res,
         "Polls fetched successfully",
@@ -132,6 +130,55 @@ exports.get_poll_by_id = [
         res,
         "Poll fetched successfully",
         poll
+      );
+    } catch (err) {
+      return res.status(500).json({
+        status: false,
+        message: "Server Error...!",
+        error: err.message,
+      });
+    }
+  },
+];
+
+/**
+ * Vote a poll option API
+ * The user can vote a poll option by providing the poll id and option id
+ */
+
+exports.vote_poll_option = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const { poll_id, option_id } = req.body;
+      const user_id = req.user.user._id;
+
+      const poll = await poll_model.findById(poll_id);
+      if (!poll) {
+        return apiResponse.notFoundResponse(res, "Poll not found");
+      }
+      console.log("line 159", poll);
+
+      const option = poll.poll_options.id(option_id); // Use Mongoose subdocument method
+      console.log("line 163", option);
+      if (!option) {
+        return apiResponse.notFoundResponse(res, "Option not found");
+      }
+      console.log("line 167", poll.poll_options, poll.poll_options);
+
+      if (poll.poll_options.votes.includes(user_id)) {
+        return apiResponse.successResponse(
+          res,
+          "You have already voted for this option"
+        );
+      }
+
+      option.votes.push(user_id);
+      await poll.save();
+
+      return apiResponse.successResponse(
+        res,
+        "You have successfully voted for this option"
       );
     } catch (err) {
       return res.status(500).json({

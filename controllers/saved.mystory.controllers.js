@@ -56,7 +56,7 @@ exports.save_mystory = [
         return apiResponse.successResponseWithData(
           res,
           "Mystory Unsaved",
-          deleted
+         // deleted
         );
       }
 

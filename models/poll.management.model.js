@@ -6,14 +6,16 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+
+
 const pollSchema = new Schema(
   {
-    user_id: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
+    user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
     poll_question: { type: String, required: true },
     poll_options: [
       {
         option: { type: String, required: true },
-        votes: { type: Number, default: 0 },
+        votes: [{ type: Schema.Types.ObjectId, ref: "User" }], 
       },
     ],
     poll_end_date: { type: Date, required: true },
