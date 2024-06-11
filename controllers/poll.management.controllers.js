@@ -224,6 +224,7 @@ exports.get_poll_results = [
             profile_image: voter.profile_image
           })),
           vote_count: option.votes.length,
+          total_users: poll.poll_options.reduce((acc, cur) => acc + cur.votes.length, 0),
         }));
   
         return apiResponse.successResponseWithData(res, "Poll results", results);
