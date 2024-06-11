@@ -143,49 +143,87 @@ exports.get_poll_by_id = [
 
 /**
  * Vote a poll option API
- * The user can vote a poll option by providing the poll id and option id
+ * The user can vote a poll option 
  */
 
 exports.vote_poll_option = [
-  login_validator,
-  async (req, res) => {
-    try {
-      const { poll_id, option_id } = req.body;
-      const user_id = req.user.user._id;
-
-      const poll = await poll_model.findById(poll_id);
-      if (!poll) {
-        return apiResponse.notFoundResponse(res, "Poll not found");
+    login_validator,
+    async (req, res) => {
+      try {
+        const { poll_id, option_id } = req.body; // Assume `option_id` is passed in the request body
+        const user_id = req.user.user._id;
+  
+        // Find the poll
+        const poll = await poll_model.findById(poll_id);
+        if (!poll) {
+          return apiResponse.notFoundResponse(res, "Poll not found");
+        }
+        console.log("Poll found:", poll);
+  
+        // Find the user
+        const user = await user_model.findById(user_id);
+        if (!user) {
+          return apiResponse.notFoundResponse(res, "User not found");
+        }
+  
+        // Check if the poll has expired
+        // if (poll.poll_end_date < new Date()) {
+        //   return apiResponse.unauthorizedResponse(res, "Poll time expired");
+        // }
+  
+        // Find the option
+        const option = poll.poll_options.id(option_id); // Use Mongoose subdocument method
+        if (!option) {
+          return apiResponse.notFoundResponse(res, "Option not found");
+        }
+        console.log("Option found:", option);
+  
+        // Check if the user has already voted
+        if (option.votes.includes(user_id)) {
+          return apiResponse.unauthorizedResponse(res, "You already voted");
+        }
+  
+        // Add the vote
+        option.votes.push(user_id);
+        await poll.save();
+  
+        return apiResponse.successResponse(res, "Vote added successfully");
+      } catch (err) {
+        return res.status(500).json({
+          status: false,
+          message: "Server Error...!",
+          error: err.message,
+        });
       }
-      console.log("line 159", poll);
+    },
+  ];
 
-      const option = poll.poll_options.id(option_id); // Use Mongoose subdocument method
-      console.log("line 163", option);
-      if (!option) {
-        return apiResponse.notFoundResponse(res, "Option not found");
-      }
-      console.log("line 167", poll.poll_options, poll.poll_options);
-
-      if (poll.poll_options.votes.includes(user_id)) {
-        return apiResponse.successResponse(
+  //Get Poll Results
+exports.get_poll_results = [
+    async (req, res) => {
+      try {
+        const poll = await poll_model.findById(req.params.poll_id);
+        if (!poll) {
+          return apiResponse.notFoundResponse(res, "Poll not found");
+        }
+  
+        // Calculate the votes
+        const results = poll.poll_options.map((option) => ({
+          option: option.option,
+          votes: option.votes.length,
+        }));
+  
+        return apiResponse.successResponseWithData(
           res,
-          "You have already voted for this option"
+          "Poll results",
+          results
         );
+      } catch (err) {
+        return res.status(500).json({
+          status: false,
+          message: "Server Error...!",
+          error: err.message,
+        });
       }
-
-      option.votes.push(user_id);
-      await poll.save();
-
-      return apiResponse.successResponse(
-        res,
-        "You have successfully voted for this option"
-      );
-    } catch (err) {
-      return res.status(500).json({
-        status: false,
-        message: "Server Error...!",
-        error: err.message,
-      });
-    }
-  },
-];
+    },
+  ];

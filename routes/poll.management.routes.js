@@ -12,6 +12,7 @@ router.delete("/delete-poll/:poll_id",poll_management_controller.delete_poll_by_
 
 //Votes Routes
 router.post("/add-vote",poll_management_controller.vote_poll_option)
+router.get("/get-votes-list/:poll_id",poll_management_controller.get_poll_results)
 
 
 
