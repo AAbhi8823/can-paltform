@@ -25,6 +25,7 @@ const zoom_controller = require('../controllers/zoom.controllers')
 
 router.post('/add-meeting', zoom_controller.create_meeting)
 router.get("/get-meeting-list", zoom_controller.get_meetings_list)
+router.delete("/delete-meeting/:meeting_id", zoom_controller.delete_meeting_by_id)
 
 
 
