@@ -14,7 +14,7 @@ const zoom = require("../helpers/zoom.integration");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
 
-const Meeting = require("../models/zoom.live.meeting.management.model");
+//const zoom_meeting = require("../models/zoom.live.meeting.management.model");
 
 const qs = require('qs');
 
@@ -60,11 +60,11 @@ const qs = require('qs');
 const api_base_url = "https://api.zoom.us/v2";
 const auth_token_url = "https://zoom.us/oauth/token";
 
-const zoom_credentials = {
-  client_id: "JU1b0CDWRq2_pQIJqq0LNw",
-  client_secret: "CPb5LC1pR7juuPtXdO3bZZAtvy694k9L",
+var zoom_credentials = {
+  account_id: 'Jz6LCqrwQha_IQ1_KXdoAQ',
+  client_id: 'JU1b0CDWRq2_pQIJqq0LNw',
+  client_secret: 'CPb5LC1pR7juuPtXdO3bZZAtvy694k9L'
 };
-
 exports.create_meeting = [
   login_validator,
   // Assuming login_validator is defined somewhere
@@ -93,22 +93,23 @@ exports.create_meeting = [
       const payload = { topic, type, start_time, duration, timezone, password };
 
       const response = await createMeeting(payload);
-      if (!response || !response.id) {
+      console.log("Response line 96", response);
+      if (!response) {
         return res
-          .status(500)
-          .json({ status: false, message: "Unable to create meeting" });
+          .status(400)
+          .json({ status: false, message: "Unable to create meeting...1" });
       }
 
       const new_meeting = new zoom_model({
         user_id,
-        zoom_meeting_id: response.id,
-        topic: response.topic,
-        start_time: response.start_time,
-        duration: response.duration,
-        timezone: response.timezone,
-        password: response.password,
-        join_url: response.join_url,
-        start_url: response.start_url,
+        zoom_meeting_id: response.data.id,
+        topic: response.data.topic,
+        start_time: response.data.start_time,
+        duration: response.data.duration,
+        timezone: response.data.timezone,
+        password: response.data.password,
+        join_url: response.data.join_url,
+        start_url: response.data.start_url,
       });
 
       await new_meeting.save();
@@ -130,7 +131,17 @@ exports.create_meeting = [
 ];
 
 // // Helper function to create a Zoom meeting
+
 async function createMeeting({ topic, type, start_time, duration, timezone, password }) {
+  const auth_token_url = 'https://zoom.us/oauth/token'; // Update this if your auth token URL is different
+  const api_base_url = 'https://api.zoom.us/v2';
+
+  // const zoom_credentials = {
+  //   account_id: 'your_account_id',
+  //   client_id: 'your_client_id',
+  //   client_secret: 'your_client_secret'
+  // };
+
   try {
     // Generate access token
     const authResponse = await axios.post(
@@ -144,13 +155,15 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
       }
     );
 
+    //console.log("Auth Response", authResponse);
+
     if (authResponse.status !== 200) {
       console.error("Unable to get access token", authResponse.data);
-      return null;
+      return { status: false, message: "Unable to get access token" };
     }
 
     const access_token = authResponse.data.access_token;
-    console.log("Access Token", access_token);
+    console.log("Access Token line 165", access_token);
 
     const headers = {
       Authorization: `Bearer ${access_token}`,
@@ -165,54 +178,23 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
       payload,
       { headers }
     );
+    console.log("Meeting Response", typeof meetingResponse.status,typeof 201);
 
     if (meetingResponse.status !== 201) {
       console.error("Unable to generate meeting link", meetingResponse.data);
-      return null;
+      return { status: false, message: "Unable to create meeting...!" };
     }
 
-    return meetingResponse.data;
+    return { status: true, data: meetingResponse.data };
   } catch (error) {
     if (error.response) {
       // Server responded with a status other than 200 range
       console.error("Error creating meeting:", error.response.data);
-    } else if (error.request) {
-      // Request was made but no response received
-      console.error("No response received:", error.request);
-    } else {
-      // Something else happened while setting up the request
-      console.error("Error:", error.message);
     }
-    return null;
   }
 }
 
 
-
-
-const getZoomToken = async () => {
-  try {
-    const tokenUrl = 'https://zoom.us/oauth/token';
-    const account_id = process.env.ZOOM_ACCOUNT_ID;
-    
-    const auth = Buffer.from(`${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`).toString('base64');
-    
-    const response = await axios.post(tokenUrl, qs.stringify({
-      grant_type: 'account_credentials',
-      account_id: account_id
-    }), {
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-    
-    return response.data.access_token;
-  } catch (error) {
-    console.error('Error generating Zoom token:', error.response ? error.response.data : error.message);
-    throw new Error('Failed to generate Zoom token');
-  }
-};
 
 // Get all list Zoom meetings
 
