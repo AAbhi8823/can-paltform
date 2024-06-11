@@ -10,6 +10,10 @@ router.put("/update-poll/:poll_id",poll_management_controller.update_poll)
 router.delete("/delete-poll/:poll_id",poll_management_controller.delete_poll_by_id)
 
 
+//Votes Routes
+router.post("/add-vote",poll_management_controller.vote_poll_option)
+
+
 
 
 module.exports=router

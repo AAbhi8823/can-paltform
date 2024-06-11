@@ -14,7 +14,7 @@ const mystorySchema = new Schema(
     },
     post_title: {
       type: String,
-      required: true,
+      required: false,
     },
     post_description: {
       type: String,
