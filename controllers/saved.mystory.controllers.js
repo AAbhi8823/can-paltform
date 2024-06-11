@@ -42,8 +42,30 @@ exports.save_mystory = [
         story_id: story_id,
         user_id: user_id,
       });
-      const saved = await saved_mystory.save();
-      return apiResponse.successResponseWithData(res, "Mystory Saved", saved);
+
+      //Now chek the saved mystory is already saved then remove it if not then save it
+      const saved_found = await saved_story_model.findOne({
+        story_id: story_id,
+        user_id: user_id,
+      });
+      if (saved_found) {
+        const deleted = await saved_story_model.findOneAndDelete({
+          story_id: story_id,
+          user_id: user_id,
+        });
+        return apiResponse.successResponseWithData(
+          res,
+          "Mystory Unsaved",
+          deleted
+        );
+      }
+
+      const saved_new_story = await saved_mystory.save();
+      return apiResponse.successResponseWithData(
+        res,
+        "Mystory Saved",
+        saved_new_story
+      );
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
