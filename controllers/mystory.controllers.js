@@ -40,6 +40,14 @@ exports.add_mystory = [
       //   );
       // }
 
+      //atleast one thing is required to post a story either post_title or post_description or media_files
+      if (!post_title && !post_description && !req.files) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Atleast one thing is required to post a story"
+        );
+      }
+
       //uploading media files to s3 bucket
       const media_files_url = await awsS3.multiple_file_upload(req.files);
       console.log(media_files_url);
