@@ -201,7 +201,7 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
 exports.get_meetings_list = [
   async (req, res) => {
     try {
-      const meetings = await Meeting.find();
+      const meetings = await zoom_model.find();
       return res.status(200).json({
         status: true,
         message: "Meetings list",
