@@ -176,22 +176,21 @@ exports.add_user = [
 
         // console.log("line 172", user_found.phone_number,phone_number);
         // console.log("line 178", user_found.phone_number == phone_number);
-       if(user_found){
-        if(user_found.phone_number == phone_number){
-          return res.status(409).json({
-            status:false,
-            message:`User already exists with phone number: ${phone_number}`
-          })
-        }
+        if (user_found) {
+          if (user_found.phone_number == phone_number) {
+            return res.status(409).json({
+              status: false,
+              message: `User already exists with phone number: ${phone_number}`,
+            });
+          }
 
-        if(user_found.email == email){
-          return res.status(409).json({
-            status:false,
-            message:`User already exists with email: ${email}}`
-
-          })
+          if (user_found.email == email) {
+            return res.status(409).json({
+              status: false,
+              message: `User already exists with email: ${email}}`,
+            });
+          }
         }
-       }
         console.log("line 154", user_found);
         if (user_found && user_found.isOTPVerified == false) {
           //if user is not verified then send the otp again
@@ -1162,11 +1161,8 @@ exports.user_forgot_password = [
       const token = await bcrypt.hash(jwt_token, 10);
       console.log("line 1386", token);
       const reset_link = `http://35.154.186.54/api/v1/user/reset-password?token=${token}&id=${user_found._id}`; //`${process.env.CLIENT_URL}/api/v1/reset-password/${user_found._id}/${token}`;
-    
-    // Now send the reset link to the email emebeded with the token in html form page for pasword and confirm_password then send to email
 
-    
-
+      // Now send the reset link to the email emebeded with the token in html form page for pasword and confirm_password then send to email
 
       //const reset_token = await helpers.generateResetToken(reset_link);
       ///console.log("line 598", reset_token);
@@ -1883,12 +1879,16 @@ exports.get_users_list_by_admin = [
       // Fetch the users list
       const users_list = await user_model
         .find()
-        .select("full_name phone_number email user_profile profile_image");
+        .select(
+          "full_name phone_number CANID email user_profile profile_image date_of_joining status"
+        );
 
       // Check if the users list exists
       if (!users_list) {
         return apiResponse.validationErrorWithData(res, "Users not found");
       }
+    
+
 
       return apiResponse.successResponseWithData(res, "Users list", users_list);
     } catch (err) {
@@ -2161,7 +2161,6 @@ exports.get_perecentage_user_gender_by_admin = [
     }
   },
 ];
-
 
 //Get Total live users number by admin
 

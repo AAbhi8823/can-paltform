@@ -98,6 +98,15 @@ isLive: {
       type: Boolean,
       default: false,
     },
+    date_of_joining: {
+      type: Date,
+      default: Date.now,
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Inactive", "Blocked"],
+      default: "Active",
+    },
 
     // user_type: {
     //   type: String,

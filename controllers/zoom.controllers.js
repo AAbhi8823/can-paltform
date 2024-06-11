@@ -4,7 +4,7 @@
  *
  */
 
-const apiResponse = require("../helpers/helpers");
+const apiResponse = require("../response/apiResponse");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
@@ -13,10 +13,12 @@ const user_model = require("../models/user.model");
 const zoom = require("../helpers/zoom.integration");
 const login_validator =
   require("../middlewares/jwt.auth.middleware").authentication;
+const admin_validator =
+  require("../middlewares/admin.auth.middleware").adminAuthenticate;
 
 //const zoom_meeting = require("../models/zoom.live.meeting.management.model");
 
-const qs = require('qs');
+const qs = require("qs");
 
 /**
  * Create a new Zoom meeting
@@ -61,9 +63,9 @@ const api_base_url = "https://api.zoom.us/v2";
 const auth_token_url = "https://zoom.us/oauth/token";
 
 var zoom_credentials = {
-  account_id: 'Jz6LCqrwQha_IQ1_KXdoAQ',
-  client_id: 'JU1b0CDWRq2_pQIJqq0LNw',
-  client_secret: 'CPb5LC1pR7juuPtXdO3bZZAtvy694k9L'
+  account_id: "Jz6LCqrwQha_IQ1_KXdoAQ",
+  client_id: "JU1b0CDWRq2_pQIJqq0LNw",
+  client_secret: "CPb5LC1pR7juuPtXdO3bZZAtvy694k9L",
 };
 exports.create_meeting = [
   login_validator,
@@ -121,20 +123,27 @@ exports.create_meeting = [
       });
     } catch (err) {
       console.error(err);
-      return res.status(500).json({
-        status: false,
-        message: "Server Error...!",
-        error: err.message,
-      });
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
   },
 ];
 
 // // Helper function to create a Zoom meeting
 
-async function createMeeting({ topic, type, start_time, duration, timezone, password }) {
-  const auth_token_url = 'https://zoom.us/oauth/token'; // Update this if your auth token URL is different
-  const api_base_url = 'https://api.zoom.us/v2';
+async function createMeeting({
+  topic,
+  type,
+  start_time,
+  duration,
+  timezone,
+  password,
+}) {
+  const auth_token_url = "https://zoom.us/oauth/token"; // Update this if your auth token URL is different
+  const api_base_url = "https://api.zoom.us/v2";
 
   // const zoom_credentials = {
   //   account_id: 'your_account_id',
@@ -149,8 +158,10 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
       `grant_type=account_credentials&account_id=${zoom_credentials.account_id}`,
       {
         headers: {
-          Authorization: `Basic ${Buffer.from(`${zoom_credentials.client_id}:${zoom_credentials.client_secret}`).toString('base64')}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${Buffer.from(
+            `${zoom_credentials.client_id}:${zoom_credentials.client_secret}`
+          ).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
@@ -167,7 +178,7 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
 
     const headers = {
       Authorization: `Bearer ${access_token}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const payload = { topic, type, start_time, duration, timezone, password };
@@ -178,7 +189,7 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
       payload,
       { headers }
     );
-    console.log("Meeting Response", typeof meetingResponse.status,typeof 201);
+    console.log("Meeting Response", typeof meetingResponse.status, typeof 201);
 
     if (meetingResponse.status !== 201) {
       console.error("Unable to generate meeting link", meetingResponse.data);
@@ -193,8 +204,6 @@ async function createMeeting({ topic, type, start_time, duration, timezone, pass
     }
   }
 }
-
-
 
 // Get all list Zoom meetings
 
@@ -212,6 +221,39 @@ exports.get_meetings_list = [
       res
         .status(500)
         .json({ status: false, msg: "Server error", error: err.message });
+    }
+  },
+];
+
+// Delete a Zoom meeting by ID
+
+exports.delete_meeting_by_id = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      const { meeting_id } = req.params;
+      if (!meeting_id) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error",
+          "Meeting ID is required"
+        );
+      }
+      
+      // Find the meeting by ID
+      const meeting_found = await zoom_model.findById(meeting_id);
+      console.log("line 28", meeting_found);
+      if (!meeting_found) {
+        return apiResponse.notFoundResponse(res, "Meeting not found");
+      }
+
+      // Delete the found meeting
+      await zoom_model.findByIdAndDelete({_id:meeting_id});
+
+      return apiResponse.successResponse(res, "Meeting deleted successfully");
+    } catch (err) {
+      return apiResponse.serverErrorResponse(res, err.message);
     }
   },
 ];
