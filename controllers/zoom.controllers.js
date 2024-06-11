@@ -128,24 +128,16 @@ exports.create_meeting = [
 ];
 
 // // Helper function to create a Zoom meeting
-async function createMeeting({
-  topic,
-  type,
-  start_time,
-  duration,
-  timezone,
-  password,
-}) {
+async function createMeeting({ topic, type, start_time, duration, timezone, password }) {
   try {
+    // Generate access token
     const authResponse = await axios.post(
       auth_token_url,
-      `grant_type=client_credentials`,
+      `grant_type=account_credentials&account_id=${zoom_credentials.account_id}`,
       {
         headers: {
-          Authorization: `Basic ${Buffer.from(
-            `${zoom_credentials.client_id}:${zoom_credentials.client_secret}`
-          ).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${Buffer.from(`${zoom_credentials.client_id}:${zoom_credentials.client_secret}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       }
     );
@@ -154,18 +146,17 @@ async function createMeeting({
       console.error("Unable to get access token", authResponse.data);
       return null;
     }
-    console.log("Auth Response",authResponse.data);
 
-    let access_token =
-    "eyJzdiI6IjAwMDAwMSIsImFsZyI6IkhTNTEyIiwidiI6IjIuMCIsImtpZCI6ImY0MzU4NmI4LTRlNGMtNGQ5ZS05NzdlLTJjOWI2Njg2ODRlMiJ9.eyJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiJubThtdEpRSlEwaWY1UlNGRlp4bEtBIiwidmVyIjo5LCJhdWlkIjoiYzJiM2I3ZWUwNjNkNzg3Nzk3Y2UzZGI4Y2M1YzNmYjMiLCJuYmYiOjE3MTgwMjQyNDUsImNvZGUiOiJJZXhNeHJrNlRhS2FfQVlXOWZoOU9RMjZCTWMxQ0pzTnQiLCJpc3MiOiJ6bTpjaWQ6SlUxYjBDRFdScTJfcFFJSnFxMExOdyIsImdubyI6MCwiZXhwIjoxNzE4MDI3ODQ1LCJ0eXBlIjozLCJpYXQiOjE3MTgwMjQyNDUsImFpZCI6Ikp6NkxDcXJ3UWhhX0lRMV9LWGRvQVEifQ.COauH8KqTVTKaZHvYKumLU96naNj12d3nY61hJl0XuTFOw-HRp1qaIr-8Y3pCRIxThehakSzfxhOaCU2lOLepA"
-      // authResponse.data.access_token;
+    const access_token = authResponse.data.access_token;
     console.log("Access Token", access_token);
+
     const headers = {
       Authorization: `Bearer ${access_token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
     const payload = { topic, type, start_time, duration, timezone, password };
+    console.log("Payload being sent:", JSON.stringify(payload, null, 2));
 
     const meetingResponse = await axios.post(
       `${api_base_url}/users/me/meetings`,
@@ -180,11 +171,19 @@ async function createMeeting({
 
     return meetingResponse.data;
   } catch (error) {
-    console.error("Error creating meeting", error);
+    if (error.response) {
+      // Server responded with a status other than 200 range
+      console.error("Error creating meeting:", error.response.data);
+    } else if (error.request) {
+      // Request was made but no response received
+      console.error("No response received:", error.request);
+    } else {
+      // Something else happened while setting up the request
+      console.error("Error:", error.message);
+    }
     return null;
   }
 }
-
 // Get all list Zoom meetings
 
 exports.get_meetings_list = [
