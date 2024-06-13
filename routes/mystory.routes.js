@@ -12,6 +12,7 @@ router.post('/like-story', mystory_controller.like_story);
 router.get('/get-likes-list', mystory_controller.get_likes);
 router.get('/most-liked-story', mystory_controller.most_liked_story);
 router.delete('/delete-story/:story_id', mystory_controller.delete_story);
+router.get('/get-story-by-filter/:filter', mystory_controller.get_story_by_filter)
 
 
 // SAVE STORY ROUTES
@@ -27,6 +28,9 @@ router.delete("/delete-story/:story_id", mystory_controller.delete_story);
 
 //Admin Dashboard Routes
 router.get('/get-total-stories', mystory_controller.get_total_active_mystory);
+
+
+
 
 
 

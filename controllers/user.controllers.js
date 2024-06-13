@@ -72,6 +72,7 @@ const { use } = require("../routes/user.routes");
 const helpers = require("../helpers/helpers");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const subscription_plan_model = require("../models/subcription.plan.model")
 
 const upload = multer({ storage: multer.memoryStorage() });
 /**
@@ -2194,3 +2195,10 @@ exports.get_total_live_users_by_admin = [
     }
   },
 ];
+
+
+/**
+ * Subscribe  the subscription plan by user
+ */
+
+
