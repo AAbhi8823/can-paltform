@@ -342,17 +342,20 @@ exports.get_story_by_filter = [
   //login_validator,
   async (req, res) => {
     try {
-      let filter = req.body.filter;
+      let filter = req.params.filter;
       let mystory_list = [];
+      console.log(filter)
       if (filter === "new") {
         mystory_list = await mystory_model
           .find({})
+       
           .sort({'createdAt': -1 })
           .populate(
             "user_id",
-            "full_name profile_image user_profile CANID"
+            "full_name profile_image user_profile CANID",
+            
           )
-          .select("-CANID");
+         .select("-CANID");
       } else if (filter === "trending") {
         mystory_list = await mystory_model
           .find({ isTrending: true })
@@ -378,7 +381,7 @@ exports.get_story_by_filter = [
             "full_name profile_image user_profile CANID"
           )
           .select("-CANID");
-      }
+       }
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
