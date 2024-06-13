@@ -157,11 +157,16 @@ exports.like_story = [
       const check_like_found = mystory.likes.find(
         (like) => like._id.toString() === req.user.user._id.toString()
       );
-      console.log(check_like_found);
+      console.log("line 160",check_like_found);
       if (check_like_found) {
         //now remove the like from the story
         mystory.likes.pull({ _id: req.user.user._id });
         const like_saved = await mystory.save();
+        //If like 10 then make isTrending true
+        if (like_saved.likes.length >= 10) {
+          mystory.isTrending = true;
+          await mystory.save();
+        }
         return apiResponse.successResponseWithData(
           res,
           "Successfully, Story Unliked",
@@ -215,7 +220,7 @@ exports.get_likes = [
 ];
 /**
  * Most Liked story api
- * in this api user will be able to see the most liked story/post of the user
+ * in this api user will be able to see the most liked story/post 
  *
  */
 exports.most_liked_story = [
@@ -224,9 +229,9 @@ exports.most_liked_story = [
     try {
       let user_id = req.user.user._id;
       const mystory = await mystory_model
-        .find({ user_id: user_id })
-        .sort({ likes: -1 })
-        .limit(1);
+        .find({})
+        .sort({' likes.length': -1 })
+       
       return apiResponse.successResponseWithData(
         res,
         "Most Liked Story",
@@ -341,8 +346,8 @@ exports.get_story_by_filter = [
       let mystory_list = [];
       if (filter === "new") {
         mystory_list = await mystory_model
-          .find()
-          .sort({ createdAt: -1 })
+          .find({})
+          .sort({'createdAt': -1 })
           .populate(
             "user_id",
             "full_name profile_image user_profile CANID"
@@ -358,8 +363,8 @@ exports.get_story_by_filter = [
           .select("-CANID");
       } else if (filter === "most_liked") {
         mystory_list = await mystory_model
-          .find()
-          .sort({ likes: -1 })
+          .find({})
+          .sort({ 'likes.length': -1 })
           .populate(
             "user_id",
             "full_name profile_image user_profile CANID"
