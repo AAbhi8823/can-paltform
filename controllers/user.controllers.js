@@ -72,7 +72,7 @@ const { use } = require("../routes/user.routes");
 const helpers = require("../helpers/helpers");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const subscription_plan_model = require("../models/subcription.plan.model")
+const subscription_plan_model = require("../models/subcription.plan.model");
 
 const upload = multer({ storage: multer.memoryStorage() });
 /**
@@ -1888,8 +1888,6 @@ exports.get_users_list_by_admin = [
       if (!users_list) {
         return apiResponse.validationErrorWithData(res, "Users not found");
       }
-    
-
 
       return apiResponse.successResponseWithData(res, "Users list", users_list);
     } catch (err) {
@@ -2196,9 +2194,64 @@ exports.get_total_live_users_by_admin = [
   },
 ];
 
-
 /**
- * Subscribe  the subscription plan by user
+ * Subscribe  the subscription plan by user api
+ * This api will be used to subscribe the subscription plan by user
+ * user will select the plan and then subscribe the plan
+ * This api will be used middleware to check the user's subscription plan is already active or not
+ * If user's subscription plan is already active then it will no need to subscribe the plan if plan is expired then user will be able to subscribe the plan
+ *
+ * each plan will have the duration of 30 days for all plan if user is used all their meetings allowed in their plan then he/she wiil be able to by the extra meetings
+ * by top up the plan as per scheme/model
  */
 
+exports.subscribe_plan = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the user from user_profile or from user_profile
+      const user_found = await user_model
+        .findOne({ _id: req.user.user._id })
+        .select("subscription");
 
+      // Check if the user exists
+      if (!user_found) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Check if the user's subscription plan is already active
+      if (user_found.subscription.isActive) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User's subscription plan is already active"
+        );
+      }
+
+      // Check if the user's subscription plan is expired
+      if (user_found.subscription.expiryDate < Date.now()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "User's subscription plan is expired"
+        );
+      }
+
+      // Subscribe the plan
+      user_found.subscription.isActive = true;
+      user_found.subscription.expiryDate = Date.now() + 2592000000; // 30 days
+      const user_updated = await user_found.save();
+
+      return apiResponse.successResponseWithData(
+        res,
+        "User subscribed the plan",
+        user_updated
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
