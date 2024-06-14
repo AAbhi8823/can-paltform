@@ -3,6 +3,7 @@
  */
 
 const mongoose = require("mongoose");
+const { report } = require("../routes/user.routes");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
@@ -10,8 +11,11 @@ const userSchema = new Schema(
     full_name: { type: String, required: true },
     email: { type: String, required: false, unique: true },
     phone_number: { type: String, required: false, unique: true },
-    gender: { type: String,
-      enum:["male","female","others"] ,required: true },
+    gender: {
+      type: String,
+      enum: ["male", "female", "others"],
+      required: true,
+    },
     date_of_birth: { type: Date, required: true },
     agreed_To_Terms: { type: Boolean, required: true, default: false },
     otp: { type: String, required: false },
@@ -74,7 +78,7 @@ const userSchema = new Schema(
         required: false,
       },
     ],
-isLive: {
+    isLive: {
       type: Boolean,
       default: false,
     },
@@ -87,17 +91,22 @@ isLive: {
       type: Boolean,
       default: false,
     },
-    blockedBy: [{
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: false,
-    }], 
-    blockedTo: [{
-     user_id:{
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: false,}
-    }],
+    blockedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+    ],
+    blockedTo: [
+      {
+        user_id: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: false,
+        },
+      },
+    ],
     isAdmin: {
       type: Boolean,
       default: false,
@@ -111,6 +120,27 @@ isLive: {
       enum: ["Active", "Inactive", "Blocked"],
       default: "Active",
     },
+    
+    reportedBy: [
+      {
+        user_id: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: false,
+        },
+        story_id:{
+          type: Schema.Types.ObjectId,
+          ref: "MyStory",
+          required: false,
+        },
+        
+        report_reason: {
+          type: String,
+          required: false,
+          trim: true,
+        },
+      },
+    ],
 
     // user_type: {
     //   type: String,

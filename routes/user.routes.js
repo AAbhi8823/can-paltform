@@ -47,6 +47,10 @@ router.post("/user-password-reset",user_controllers.user_forgot_password)
 //router.post("/rest-password/:id/:token ",user_controllers.reset_password)
 router.post("/reset-password",user_controllers.reset_password)
 
+//User Reports API
+router.post("/report-user",user_controllers.report_user)
+router.get("/get-reported-users-list",user_controllers.get_reported_users_list_by_admin)
+
 
 
 
