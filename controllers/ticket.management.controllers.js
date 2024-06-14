@@ -50,12 +50,22 @@ exports.create_ticket = [
       //   const user_id = req.user.user._id;
       //   const CANID = req.user.user.CANID;
 
-      // Upload document to S3 bucket
-      const file = req.file;
-      const document_url = await aws.single_file_upload(
-        req.file.buffer,
-        req.file.originalname
-      );
+      // Upload document to S3 bucket if available if not then null
+      let document_url = null;
+      if (req.file) {
+        const file = req.file;
+        const document_url = await aws.single_file_upload(
+          req.file.buffer,
+          req.file.originalname
+        ); 
+      }
+      // else{
+      //   document_url = null;
+      // }
+
+       
+
+      
       console.log("line 64", document_url);
       const new_ticket = new ticket_model({
         ticket_subject,
