@@ -51,17 +51,19 @@ exports.create_ticket = [
       //   const CANID = req.user.user.CANID;
 
       // Upload document to S3 bucket if available if not then null
-      let document_url = null;
+      
+      console.log("line 64", req.file);
       if (req.file) {
         const file = req.file;
-        const document_url = await aws.single_file_upload(
+        console.log("line 58", file);
+        var document_url = await aws.single_file_upload(
           req.file.buffer,
           req.file.originalname
         ); 
       }
-      // else{
-      //   document_url = null;
-      // }
+      else{
+        document_url = null;
+      }
 
        
 
@@ -102,7 +104,7 @@ exports.get_tickets_list = [
   admin_validator,
   async (req, res) => {
     try {
-      const tickets = await ticket_model.find();
+      const tickets = await ticket_model.find().sort({ createdAt: -1 });
       return res.status(200).json({
         status: true,
         message: "Tickets list",

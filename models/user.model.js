@@ -57,6 +57,10 @@ const userSchema = new Schema(
         type: Date,
         required: false,
       },
+      isActive: {
+        type: Boolean,
+        default: false,
+      },
     },
     profile_image: { type: String, required: false },
 
