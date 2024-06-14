@@ -280,17 +280,17 @@ exports.get_meetings_by_filter = [
       let meetings = [];
       if (filter === "today") {
         meetings = await zoom_model.find({
-          user_id,
+         // user_id,
           start_time: { $gte: new Date().setHours(0, 0, 0, 0) },
         });
       } else if (filter === "upcoming") {
         meetings = await zoom_model.find({
-          user_id,
+         // user_id,
           start_time: { $gte: new Date() },
         });
       } else if (filter === "history") {
         meetings = await zoom_model.find({
-          user_id,
+         // user_id,
           start_time: { $lt: new Date() },
         });
       } else {
