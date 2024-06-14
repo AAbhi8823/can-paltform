@@ -257,3 +257,59 @@ exports.delete_meeting_by_id = [
     }
   },
 ];
+
+/**
+ * Get Zoom meeting filter by today and history meetings
+ * filter will today, upcoming and history
+ */
+
+exports.get_meetings_by_filter = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const { filter } = req.params;
+      const user_id = req.user.user._id;
+
+      const user = await user_model.findById(user_id);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+
+      let meetings = [];
+      if (filter === "today") {
+        meetings = await zoom_model.find({
+          user_id,
+          start_time: { $gte: new Date().setHours(0, 0, 0, 0) },
+        });
+      } else if (filter === "upcoming") {
+        meetings = await zoom_model.find({
+          user_id,
+          start_time: { $gte: new Date() },
+        });
+      } else if (filter === "history") {
+        meetings = await zoom_model.find({
+          user_id,
+          start_time: { $lt: new Date() },
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ status: false, message: "Invalid filter" });
+      }
+
+
+      return res.status(200).json({
+        status: true,
+        message: "Meetings list",
+        data: meetings,
+      });
+    } catch (err) {
+      console.error(err.message);
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+    }
+  }
+];
+
+  

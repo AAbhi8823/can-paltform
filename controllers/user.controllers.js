@@ -2194,6 +2194,117 @@ exports.get_total_live_users_by_admin = [
   },
 ];
 
+//Report user by other user API
+
+exports.report_user = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the user to be reported
+      const user_to_report = await user_model.findOne({
+        _id: req.body.user_id,
+      }).select("full_name CANID gender reportedBy");
+
+      console.log("line 80", user_to_report);
+
+      // Check if the user exists
+      if (!user_to_report) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Fetch the user who is reporting
+      const user_reporting = await user_model.findOne({
+        _id: req.user.user._id,
+      });
+
+      // Check if the user exists
+      if (!user_reporting) {
+        return apiResponse.validationErrorWithData(res, "User not found");
+      }
+
+      // Initialize reportedBy array if it doesn't exist
+      if (!user_to_report.reportedBy) {
+        user_to_report.reportedBy = [];
+      }
+
+      // Check if the user_id is already in the reportedBy array
+      const reportedIndex = user_to_report.reportedBy.findIndex(
+        (reportedUser) => reportedUser.user_id.toString() === req.user.user._id
+      );
+
+      if (reportedIndex >= 0) {
+        // If user_id is found in the reportedBy array, update the report reason
+        user_to_report.reportedBy[reportedIndex].report_reason = req.body.report_reason;
+      } else {
+        // If user_id is not found in the reportedBy array, add it
+        user_to_report.reportedBy.push({
+          user_id: req.user.user._id,
+          story_id: req.body.story_id,
+          report_reason: req.body.report_reason,
+        });
+      }
+      console.log("line 80", user_to_report);
+
+      await user_to_report.save();
+
+      return apiResponse.successResponseWithData(res, "User reported successfully",user_to_report);
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
+
+//Get reported users list by admin
+
+exports.get_reported_users_list_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the users list
+      const users_list = await user_model
+        .find({ "reportedBy.0": { $exists: true } })
+        .select(
+          "full_name phone_number CANID email user_profile profile_image date_of_joining status",
+          
+
+        );
+
+      // Check if the users list exists
+      if (!users_list) {
+        return apiResponse.validationErrorWithData(res, "Users not found");
+      }
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Reported users list",
+        users_list
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Subscribe  the subscription plan by user api
  * This api will be used to subscribe the subscription plan by user
@@ -2255,3 +2366,5 @@ exports.subscribe_plan = [
     }
   },
 ];
+
+
