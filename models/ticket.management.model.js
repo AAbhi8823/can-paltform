@@ -9,7 +9,7 @@ const ticketSchema = new Schema(
     //user_id: { type: Schema.Types.ObjectId, ref: "User", required: false },
     ticket_id: {
       type: String,
-      default: (Math.random() + 1).toString(36).substring(7),
+      default:"CAN"+ (parseInt(Math.random()*999999 + 1000000)),
     },
     CANID: { type: String, required: true },
     ticket_subject: { type: String, required: true },
