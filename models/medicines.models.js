@@ -20,7 +20,7 @@ const medicineSchema = new Schema(
         medicine_dosage: { type: String, required: true },
         meal: { 
           type: String,
-          enum: ["Before Breakfast", "After Breakfast", "Before Lunch", "After Lunch", "Before Dinner", "After Dinner", ],
+          //enum: ["Before Breakfast", "After Breakfast", "Before Lunch", "After Lunch", "Before Dinner", "After Dinner", ],
           required: true,
         },
         time_for_reminder: { type: String, required: false },

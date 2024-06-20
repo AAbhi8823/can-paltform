@@ -305,3 +305,40 @@ exports.get_appointment_by_date = [
     }
   },
 ];
+
+/**
+ *Get Appointment list for the next 7 days and every time when hit the api it
+  * will return the appointments for the next 7 days from the current date
+ */
+
+exports.get_appointment_for_next_7_days = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const currentDate = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(currentDate.getDate() + 7);
+
+      const appointments = await appointment_model.find({
+        user_id: req.user.user._id,
+        appointment_date: {
+          $gte: currentDate,
+          $lte: nextWeek,
+        },
+      });
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Appointments for the next 7 days",
+        appointments
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+

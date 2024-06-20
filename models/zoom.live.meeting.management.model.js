@@ -56,6 +56,9 @@ const zoomSchema = new mongoose.Schema({
   password: { type: String },
   join_url: { type: String, required: true },
   start_url: { type: String, required: true },
+},
+{
+  timestamps: true,
 });
 
 module.exports = mongoose.model('Zoommeeting', zoomSchema);
