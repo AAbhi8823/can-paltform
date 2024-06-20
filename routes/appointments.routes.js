@@ -11,6 +11,7 @@ router.delete("/delete-appointment/:appointment_id",appointment_controller.delet
 router.get("/upcoming-appointments",appointment_controller.upcoming_appointment)
 router.get("/get-todays-appointments",appointment_controller.todays_appointment)
 router.get("/get-appointment-by-date/:appointment_date",appointment_controller.get_appointment_by_date)
+router.get("/get-next-seven-days-appointments",appointment_controller.get_appointment_for_next_7_days)
 
 
 

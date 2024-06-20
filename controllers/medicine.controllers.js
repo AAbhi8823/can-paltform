@@ -414,3 +414,41 @@ exports.get_medicine_bank_details_month_wise = [
 ];
 
 
+/**
+ * Get Medicine Details API for the next 7 days
+ * and every time when hit the api it will return the medicines for the next 7 days from the current date
+ * 
+ */
+
+exports.get_medicine_for_next_7_days = [
+  login_validator,
+  async (req, res) => {
+    try {
+      const currentDate = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(currentDate.getDate() + 7);
+
+      const medicines = await medicine_model.find({
+        user_id: req.user.user._id,
+        "medicines.medicine_start_date": { $lte: nextWeek },
+        "medicines.medicine_stop_date": { $gte: currentDate }
+      });
+
+      const filteredMedicines = medicines.map(med => {
+        return {
+          ...med._doc,
+          medicines: med.medicines.filter(medicine => 
+            medicine.medicine_start_date <= nextWeek && medicine.medicine_stop_date >= currentDate
+          )
+        };
+      }).filter(med => med.medicines.length > 0);
+
+      return apiResponse.successResponseWithData(res, "Medicine details", filteredMedicines);
+    } catch (err) {
+      console.log(err);
+      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+    }
+  },
+
+];
+
