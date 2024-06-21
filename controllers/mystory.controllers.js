@@ -230,7 +230,7 @@ exports.most_liked_story = [
       let user_id = req.user.user._id;
       const mystory = await mystory_model
         .find({})
-        .sort({' likes.length': -1 })
+        .sort({'likes.length': -1 })
        
       return apiResponse.successResponseWithData(
         res,
@@ -355,7 +355,7 @@ exports.get_story_by_filter = [
             "full_name profile_image user_profile CANID",
             
           )
-         .select("-CANID");
+        // .select("-CANID");
       } else if (filter === "trending") {
         mystory_list = await mystory_model
           .find({ isTrending: true })
