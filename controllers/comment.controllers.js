@@ -21,16 +21,17 @@ exports.add_comment = [
       const user_id = req.user.user._id;
       const CANID = req.user.user.CANID;
       var story = await mystory_model.findById(story_id)//.populate("user_id");
-      console.log("line 25", story);
+      const user_found= await user_model.findOne({_id:user_id});
+      console.log("line 25",user_id, user_found);
       if (!story) {
         return res.status(404).json({ msg: "Story not found" });
       }
-      console.log("line 27", story.user_id.profile_image);
+      console.log("line 27", user_found.profile_image);
       const new_comment = new comment_model({
       
         name: req.user.user.full_name,
         user_profile: req.user.user.user_profile,
-        profile_image: story.user_id.profile_image,
+        profile_image:user_found.profile_image,
         comment,
         user_id,
         CANID,
