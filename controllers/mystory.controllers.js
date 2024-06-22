@@ -338,50 +338,129 @@ exports.delete_story = [
  * other filters new , trending, most liked will be applied
  */
 
+// exports.get_story_by_filter = [
+//   //login_validator,
+//   async (req, res) => {
+//     try {
+//       let filter = req.params.filter;
+//       let mystory_list = [];
+//       console.log(filter)
+//       if (filter === "new") {
+//         mystory_list = await mystory_model
+//           .find({})
+       
+//           .sort({'createdAt': -1 })
+//           .populate(
+//             "user_id",
+//             "full_name profile_image user_profile CANID",
+            
+//           )
+       
+//       } else if (filter === "trending") {
+//         mystory_list = await mystory_model
+//           .find({ isTrending: true })
+//           .populate(
+//             "user_id",
+//             "full_name profile_image user_profile CANID"
+//           )
+         
+//       } else if (filter === "most_liked") {
+//         console.log("line 377","most_liked");
+//         mystory_list = await mystory_model
+//           .find({})
+//           .sort({ 'likes.length': -1 })
+//           .populate(
+//             "user_id",
+//             "full_name profile_image user_profile CANID"
+//           )
+         
+//       } else {
+//         console.log("line 377");
+//         mystory_list = await mystory_model
+//           .find()
+//           .populate(
+//             "user_id",
+//             "full_name profile_image user_profile CANID"
+//           )
+//          // .select("-CANID");
+//        }
+//       return apiResponse.successResponseWithData(
+//         res,
+//         "Mystory List Fetched",
+//         mystory_list
+//       );
+//     } catch (err) {
+//       return apiResponse.serverErrorResponse(
+//         res,
+//         "Server Error...!",
+//         err.message
+//       );
+//     }
+//   },
+// ];
+
 exports.get_story_by_filter = [
   //login_validator,
   async (req, res) => {
     try {
       let filter = req.params.filter;
       let mystory_list = [];
-      console.log(filter)
+      console.log(filter);
+
       if (filter === "new") {
         mystory_list = await mystory_model
           .find({})
-       
-          .sort({'createdAt': -1 })
-          .populate(
-            "user_id",
-            "full_name profile_image user_profile CANID",
-            
-          )
-        // .select("-CANID");
+          .sort({ createdAt: -1 })
+          .populate("user_id", "full_name profile_image user_profile CANID");
       } else if (filter === "trending") {
         mystory_list = await mystory_model
           .find({ isTrending: true })
-          .populate(
-            "user_id",
-            "full_name profile_image user_profile CANID"
-          )
-          .select("-CANID");
+          .populate("user_id", "full_name profile_image user_profile CANID");
       } else if (filter === "most_liked") {
+        console.log("line 377", "most_liked");
         mystory_list = await mystory_model
-          .find({})
-          .sort({ 'likes.length': -1 })
-          .populate(
-            "user_id",
-            "full_name profile_image user_profile CANID"
-          )
-          .select("-CANID");
+          .aggregate([
+            {
+              $addFields: {
+                likesCount: { $size: "$likes" },
+              },
+            },
+            {
+              $sort: { likesCount: -1 },
+            },
+          ])
+          .lookup({
+            from: "users", // the collection to join
+            localField: "user_id",
+            foreignField: "_id",
+            as: "user_id",
+          })
+          .unwind("$user_id")
+          .project({
+            "user_id.full_name": 1,
+            "user_id.profile_image": 1,
+            "user_id.user_profile": 1,
+            "user_id.CANID": 1,
+            post_title: 1,
+            post_description: 1,
+            media_files: 1,
+            comments: 1,
+            shares: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            isNew: 1,
+            isTrending: 1,
+            likesCount: 1,
+          });
+
       } else {
+        console.log("line 377");
         mystory_list = await mystory_model
           .find()
-          .populate(
-            "user_id",
-            "full_name profile_image user_profile CANID"
-          )
-          .select("-CANID");
-       }
+          .populate("user_id", "full_name profile_image user_profile CANID");
+        // .select("-CANID");
+      }
+
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
