@@ -84,28 +84,43 @@ exports.get_mystory_list = [
     try {
       // Check if req.user is set
       if (!req.user || !req.user.user || !req.user.user._id) {
-        return apiResponse.validationErrorWithData(res, "Authentication required");
+        return apiResponse.validationErrorWithData(
+          res,
+          "Authentication required"
+        );
       }
 
       // Get the authenticated user ID
       const authenticatedUserId = req.user.user._id;
 
       // Fetch the authenticated user's profile to get the blocked users
-      const userProfile = await user_model.findOne({ _id: authenticatedUserId }).select('blockedTo');
-      const blockedUsers = userProfile.blockedTo.map(blocked => blocked.user_id);
+      const userProfile = await user_model
+        .findOne({ _id: authenticatedUserId })
+        .select("blockedTo");
+      const blockedUsers = userProfile.blockedTo.map(
+        (blocked) => blocked.user_id
+      );
 
       // Fetch the stories excluding those from blocked users
       const mystory_list = await mystory_model
         .find({
-          user_id: { $nin: blockedUsers }
+          user_id: { $nin: blockedUsers },
         })
         .populate("user_id", "full_name profile_image user_profile CANID")
         .select("-CANID")
         .sort({ createdAt: -1 });
 
-      return apiResponse.successResponseWithData(res, "Mystory List Fetched", mystory_list);
+      return apiResponse.successResponseWithData(
+        res,
+        "Mystory List Fetched",
+        mystory_list
+      );
     } catch (err) {
-      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
   },
 ];
@@ -121,13 +136,12 @@ exports.get_my_story_list = [
       const mystory_list = await mystory_model.find({
         CANID: req.user.user.CANID,
       });
-      console.log("line 113",mystory_list)
+      console.log("line 113", mystory_list);
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
         mystory_list
       );
-      
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
@@ -157,7 +171,7 @@ exports.like_story = [
       const check_like_found = mystory.likes.find(
         (like) => like._id.toString() === req.user.user._id.toString()
       );
-      console.log("line 160",check_like_found);
+      console.log("line 160", check_like_found);
       if (check_like_found) {
         //now remove the like from the story
         mystory.likes.pull({ _id: req.user.user._id });
@@ -220,22 +234,23 @@ exports.get_likes = [
 ];
 /**
  * Most Liked story api
- * in this api user will be able to see the most liked story/post 
+ * This api will return the most liked story decending order of likes
+ * means the story with most likes will be on top and so on
  *
  */
 exports.most_liked_story = [
-  login_validator,
+  //login_validator,
   async (req, res) => {
     try {
-      let user_id = req.user.user._id;
-      const mystory = await mystory_model
-        .find({})
-        .sort({'likes.length': -1 })
-       
+      const mystory_list = await mystory_model
+        .find()
+        .sort({ likes: -1 })
+        .populate("user_id", "full_name profile_image user_profile CANID")
+        .select("-CANID");
       return apiResponse.successResponseWithData(
         res,
-        "Most Liked Story",
-        mystory
+        "Most Liked Story List",
+        mystory_list
       );
     } catch (err) {
       return apiResponse.serverErrorResponse(
@@ -246,7 +261,6 @@ exports.most_liked_story = [
     }
   },
 ];
-
 
 /**
  * Save story api
@@ -300,7 +314,7 @@ exports.delete_story = [
         return apiResponse.notFoundResponse(res, "Story not found");
       }
       //delete the media files from s3 bucket
-     // await awsS3.delete_files(story.media_files);
+      // await awsS3.delete_files(story.media_files);
       //delete the story
       const story_deleted = await mystory_model.findByIdAndDelete(
         req.params.story_id
@@ -310,10 +324,6 @@ exports.delete_story = [
       await comment_model.deleteMany({ story_id: req.params.story_id });
       //delete the saved story
       await mystory_save_model.deleteMany({ story_id: req.params.story_id });
-
-
-
-
 
       return apiResponse.successResponseWithData(
         res,
@@ -330,74 +340,12 @@ exports.delete_story = [
   },
 ];
 
-
 /**
- * Get STORY BY FILTER API 
- * in this api user will be able to see the story by filter 
- * If filter is empty then all the story will be fetched and 
+ * Get STORY BY FILTER API
+ * in this api user will be able to see the story by filter
+ * If filter is empty then all the story will be fetched and
  * other filters new , trending, most liked will be applied
  */
-
-// exports.get_story_by_filter = [
-//   //login_validator,
-//   async (req, res) => {
-//     try {
-//       let filter = req.params.filter;
-//       let mystory_list = [];
-//       console.log(filter)
-//       if (filter === "new") {
-//         mystory_list = await mystory_model
-//           .find({})
-       
-//           .sort({'createdAt': -1 })
-//           .populate(
-//             "user_id",
-//             "full_name profile_image user_profile CANID",
-            
-//           )
-       
-//       } else if (filter === "trending") {
-//         mystory_list = await mystory_model
-//           .find({ isTrending: true })
-//           .populate(
-//             "user_id",
-//             "full_name profile_image user_profile CANID"
-//           )
-         
-//       } else if (filter === "most_liked") {
-//         console.log("line 377","most_liked");
-//         mystory_list = await mystory_model
-//           .find({})
-//           .sort({ 'likes.length': -1 })
-//           .populate(
-//             "user_id",
-//             "full_name profile_image user_profile CANID"
-//           )
-         
-//       } else {
-//         console.log("line 377");
-//         mystory_list = await mystory_model
-//           .find()
-//           .populate(
-//             "user_id",
-//             "full_name profile_image user_profile CANID"
-//           )
-//          // .select("-CANID");
-//        }
-//       return apiResponse.successResponseWithData(
-//         res,
-//         "Mystory List Fetched",
-//         mystory_list
-//       );
-//     } catch (err) {
-//       return apiResponse.serverErrorResponse(
-//         res,
-//         "Server Error...!",
-//         err.message
-//       );
-//     }
-//   },
-// ];
 
 exports.get_story_by_filter = [
   //login_validator,
@@ -406,10 +354,10 @@ exports.get_story_by_filter = [
       let filter = req.params.filter;
       let mystory_list = [];
       console.log(filter);
-
       if (filter === "new") {
         mystory_list = await mystory_model
           .find({})
+
           .sort({ createdAt: -1 })
           .populate("user_id", "full_name profile_image user_profile CANID");
       } else if (filter === "trending") {
@@ -419,40 +367,9 @@ exports.get_story_by_filter = [
       } else if (filter === "most_liked") {
         console.log("line 377", "most_liked");
         mystory_list = await mystory_model
-          .aggregate([
-            {
-              $addFields: {
-                likesCount: { $size: "$likes" },
-              },
-            },
-            {
-              $sort: { likesCount: -1 },
-            },
-          ])
-          .lookup({
-            from: "users", // the collection to join
-            localField: "user_id",
-            foreignField: "_id",
-            as: "user_id",
-          })
-          .unwind("$user_id")
-          .project({
-            "user_id.full_name": 1,
-            "user_id.profile_image": 1,
-            "user_id.user_profile": 1,
-            "user_id.CANID": 1,
-            post_title: 1,
-            post_description: 1,
-            media_files: 1,
-            comments: 1,
-            shares: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            isNew: 1,
-            isTrending: 1,
-            likesCount: 1,
-          });
-
+          .find({})
+          .sort({ likes: -1 })
+          .populate("user_id", "full_name profile_image user_profile CANID");
       } else {
         console.log("line 377");
         mystory_list = await mystory_model
@@ -460,7 +377,6 @@ exports.get_story_by_filter = [
           .populate("user_id", "full_name profile_image user_profile CANID");
         // .select("-CANID");
       }
-
       return apiResponse.successResponseWithData(
         res,
         "Mystory List Fetched",
@@ -476,13 +392,90 @@ exports.get_story_by_filter = [
   },
 ];
 
+// exports.get_story_by_filter = [
+//   //login_validator,
+//   async (req, res) => {
+//     try {
+//       let filter = req.params.filter;
+//       let mystory_list = [];
+//       console.log(filter);
+
+//       if (filter === "new") {
+//         mystory_list = await mystory_model
+//           .find({})
+//           .sort({ createdAt: -1 })
+//           .populate("user_id", "full_name profile_image user_profile CANID");
+//       } else if (filter === "trending") {
+//         mystory_list = await mystory_model
+//           .find({ isTrending: true })
+//           .populate("user_id", "full_name profile_image user_profile CANID");
+//       } else if (filter === "most_liked") {
+//         console.log("line 377", "most_liked");
+//         mystory_list = await mystory_model
+//           .aggregate([
+//             {
+//               $addFields: {
+//                 likesCount: { $size: "$likes" },
+//               },
+//             },
+//             {
+//               $sort: { likesCount: -1 },
+//             },
+//           ])
+//           .lookup({
+//             from: "users", // the collection to join
+//             localField: "user_id",
+//             foreignField: "_id",
+//             as: "user_id",
+//           })
+//           .unwind("$user_id")
+//           .project({
+//             "user_id.full_name": 1,
+//             "user_id.profile_image": 1,
+//             "user_id.user_profile": 1,
+//             "user_id.CANID": 1,
+//             post_title: 1,
+//             post_description: 1,
+//             media_files: 1,
+//             comments: 1,
+//             shares: 1,
+//             createdAt: 1,
+//             updatedAt: 1,
+//             isNew: 1,
+//             isTrending: 1,
+//             likesCount: 1,
+//           });
+
+//       } else {
+//         console.log("line 377");
+//         mystory_list = await mystory_model
+//           .find()
+//           .populate("user_id", "full_name profile_image user_profile CANID");
+//         // .select("-CANID");
+//       }
+
+//       return apiResponse.successResponseWithData(
+//         res,
+//         "Mystory List Fetched",
+//         mystory_list
+//       );
+//     } catch (err) {
+//       return apiResponse.serverErrorResponse(
+//         res,
+//         "Server Error...!",
+//         err.message
+//       );
+//     }
+//   },
+// ];
+
 //Get Total number Active Mystory
 
 exports.get_total_active_mystory = [
   //login_validator,
   async (req, res) => {
     try {
-      const mystory = await mystory_model.find({  }).countDocuments();
+      const mystory = await mystory_model.find({}).countDocuments();
       return apiResponse.successResponseWithData(
         res,
         "Total Active Mystory",
