@@ -205,8 +205,9 @@ async function createMeeting({
   }
 }
 
-// Get all list Zoom meetings
-
+/**
+ * 
+ */
 exports.get_meetings_list = [
   async (req, res) => {
     try {
