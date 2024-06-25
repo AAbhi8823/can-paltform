@@ -157,11 +157,11 @@ exports.vote_poll_option = [
       const user_id = req.user.user._id;
 
       // Find the poll
-      const poll = await poll_model.findById(poll_id);
-      if (!poll) {
+      const poll_found = await poll_model.findById(poll_id);
+      if (!poll_found) {
         return apiResponse.notFoundResponse(res, "Poll not found");
       }
-      console.log("Poll found:", poll);
+      //console.log("Poll found:", poll_found);
 
       // Find the user
       const user = await user_model.findById(user_id);
@@ -169,28 +169,30 @@ exports.vote_poll_option = [
         return apiResponse.notFoundResponse(res, "User not found");
       }
 
-      // Check if the poll has expired
-      // if (poll.poll_end_date < new Date()) {
-      //   return apiResponse.unauthorizedResponse(res, "Poll time expired");
-      // }
-
       // Find the option
-      const option = poll.poll_options.id(option_id); // Use Mongoose subdocument method
-      if (!option) {
+      const option_found = poll_found.poll_options.id(option_id); // Use Mongoose subdocument method
+      if (!option_found) {
         return apiResponse.notFoundResponse(res, "Option not found");
       }
-      console.log("Option found:", option);
+      //console.log("Option found:", option_found);
 
-      // Check if the user has already voted
-      if (option.votes.includes(user_id)) {
-        return apiResponse.unauthorizedResponse(res, "You already voted");
+      // Check if the user has already voted in this poll and remove their previous vote
+      let hasVoted = false;
+      for (let option of poll_found.poll_options) {
+        const voteIndex = option.votes.indexOf(user_id);
+        if (voteIndex !== -1) {
+          hasVoted = true;
+          option.votes.splice(voteIndex, 1);
+          break; // User can only vote once, so we can stop checking further
+        }
       }
 
-      // Add the vote
-      option.votes.push(user_id);
-      await poll.save();
+      // Add the new vote
+      option_found.votes.push(user_id);
+      await poll_found.save();
 
-      return apiResponse.successResponse(res, "Vote added successfully");
+      const message = hasVoted ? "Vote updated successfully" : "Vote added successfully";
+      return apiResponse.successResponse(res, message);
     } catch (err) {
       return res.status(500).json({
         status: false,
@@ -200,6 +202,7 @@ exports.vote_poll_option = [
     }
   },
 ];
+
 
 //Get Poll Results
 exports.get_poll_results = [
