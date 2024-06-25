@@ -206,12 +206,28 @@ async function createMeeting({
 }
 
 /**
- * 
+ * Get zoom meeting list API
+ * This API will return all the zoom meetings excluding the expired meetings
  */
 exports.get_meetings_list = [
+  login_validator,
   async (req, res) => {
     try {
-      const meetings = await zoom_model.find();
+      const user_id = req.user.user._id;
+
+      const user = await user_model.findById(user_id);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ status: false, message: "User not found" });
+      }
+
+      const currentDateTime = new Date();
+      const meetings = await zoom_model.find({
+        //user_id,
+        end_time: { $gte: currentDateTime },
+      });
+
       return res.status(200).json({
         status: true,
         message: "Meetings list",
@@ -219,9 +235,11 @@ exports.get_meetings_list = [
       });
     } catch (err) {
       console.error(err.message);
-      res
-        .status(500)
-        .json({ status: false, msg: "Server error", error: err.message });
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
   },
 ];
@@ -241,7 +259,7 @@ exports.delete_meeting_by_id = [
           "Meeting ID is required"
         );
       }
-      
+
       // Find the meeting by ID
       const meeting_found = await zoom_model.findById(meeting_id);
       console.log("line 28", meeting_found);
@@ -250,7 +268,7 @@ exports.delete_meeting_by_id = [
       }
 
       // Delete the found meeting
-      await zoom_model.findByIdAndDelete({_id:meeting_id});
+      await zoom_model.findByIdAndDelete({ _id: meeting_id });
 
       return apiResponse.successResponse(res, "Meeting deleted successfully");
     } catch (err) {
@@ -281,17 +299,17 @@ exports.get_meetings_by_filter = [
       let meetings = [];
       if (filter === "today") {
         meetings = await zoom_model.find({
-         // user_id,
+         //user_id:"66604c32c3a5b5d0e8c99049",
           start_time: { $gte: new Date().setHours(0, 0, 0, 0) },
         });
       } else if (filter === "upcoming") {
         meetings = await zoom_model.find({
-         // user_id,
+          // user_id,
           start_time: { $gte: new Date() },
         });
       } else if (filter === "history") {
         meetings = await zoom_model.find({
-         // user_id,
+          // user_id,
           start_time: { $lt: new Date() },
         });
       } else {
@@ -300,7 +318,6 @@ exports.get_meetings_by_filter = [
           .json({ status: false, message: "Invalid filter" });
       }
 
-
       return res.status(200).json({
         status: true,
         message: "Meetings list",
@@ -308,9 +325,11 @@ exports.get_meetings_by_filter = [
       });
     } catch (err) {
       console.error(err.message);
-      return apiResponse.serverErrorResponse(res, "Server Error...!", err.message);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
     }
-  }
+  },
 ];
-
-  
