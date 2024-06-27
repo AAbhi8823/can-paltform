@@ -331,7 +331,7 @@ exports.get_appointment_by_date = [
           $gte: currentDate,
           $lte: nextWeek,
         },
-      });
+      }).sort({ appointment_date: 1 });
 
       return apiResponse.successResponseWithData(
         res,
