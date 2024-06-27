@@ -311,21 +311,27 @@ exports.get_appointment_by_date = [
   * will return the appointments for the next 7 days from the current date
  */
 
-exports.get_appointment_for_next_7_days = [
+ exports.get_appointment_for_next_7_days = [
   login_validator,
   async (req, res) => {
     try {
+      // Get current date and set time to start of the day
       const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      // Get date for the next 7 days and set time to end of the day
       const nextWeek = new Date();
       nextWeek.setDate(currentDate.getDate() + 7);
+      nextWeek.setHours(23, 59, 59, 999);
 
+      // Fetch appointments within the next 7 days
       const appointments = await appointment_model.find({
         user_id: req.user.user._id,
         appointment_date: {
           $gte: currentDate,
           $lte: nextWeek,
         },
-      });
+      }).sort({ appointment_date: 1 });
 
       return apiResponse.successResponseWithData(
         res,
@@ -341,7 +347,3 @@ exports.get_appointment_for_next_7_days = [
     }
   },
 ];
-
-
-
-
