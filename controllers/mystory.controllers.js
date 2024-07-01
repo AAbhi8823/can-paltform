@@ -490,3 +490,28 @@ exports.get_total_active_mystory = [
     }
   },
 ];
+
+//Get story by ID
+
+exports.get_story_by_id = [
+  //login_validator,
+  async (req, res) => {
+    try {
+      const mystory = await mystory_model
+        .findById(req.params.story_id)
+        .
+        populate("user_id", "full_name profile_image user_profile CANID");
+      return apiResponse.successResponseWithData(
+        res,
+        "Story fetched successfully",
+        mystory
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
