@@ -14,6 +14,9 @@ router.get('/most-liked-story', mystory_controller.most_liked_story);
 router.delete('/delete-story/:story_id', mystory_controller.delete_story);
 router.get('/get-story-by-filter/:filter', mystory_controller.get_story_by_filter)
 
+//get story by id
+router.get('/get-single-story/:story_id', mystory_controller.get_story_by_id);
+
 
 // SAVE STORY ROUTES
 const saved_mystory_controller = require('../controllers/saved.mystory.controllers');
