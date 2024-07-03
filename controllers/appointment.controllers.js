@@ -9,6 +9,7 @@ const login_validator =
 const validator = require("../validators/validator");
 
 //add appointment
+
 exports.add_appointment = [
   login_validator,
   async (req, res) => {
