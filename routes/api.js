@@ -17,6 +17,7 @@ const commentsRoutes=require("./comment.routes")
 const feedbackRoutes=require("./feedback.routes")  
 const ticketRoutes=require("./ticket.management.routes") 
 const pollRoutes=require("./poll.management.routes")
+const invoiceRoutes=require("./invoice.routes")
 
 
 //Middlewares
@@ -36,6 +37,8 @@ app.use("/feedback",feedbackRoutes)
 
 app.use("/ticket",ticketRoutes)
 app.use("/poll",pollRoutes)
+
+app.use("/invoice",invoiceRoutes)
 
 
 module.exports=app

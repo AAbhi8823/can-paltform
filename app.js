@@ -1,3 +1,7 @@
+
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -20,8 +24,6 @@ const flash = require("connect-flash"); //for flash messages
 
 const db_connection = require("./database/db.configurations").connectDB;
 const PORT = process.env.PORT || 3000;
-const dotenv = require("dotenv");
-dotenv.config();
 
 //-------------------
 //ejs configuration

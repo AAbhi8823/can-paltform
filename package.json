@@ -26,6 +26,7 @@
     "express-validator": "^7.0.1",
     "fast-two-sms": "^3.0.0",
     "fast2sms": "^1.0.3",
+    "fs": "^0.0.1-security",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
@@ -34,6 +35,7 @@
     "multer-s3": "^3.0.1",
     "node-sass": "^9.0.0",
     "nodemailer": "^6.9.13",
+    "pdfkit": "^0.15.0",
     "qs": "^6.12.1",
     "twilio": "^4.20.0",
     "zoomus": "^0.1.4"
