@@ -68,12 +68,13 @@ const { generateOTP } = require("../helpers/helpers");
 dotenv.config();
 const multer = require("multer");
 const aws = require("../helpers/aws.s3");
-const { use } = require("../routes/user.routes");
+const { use, report } = require("../routes/user.routes");
 const helpers = require("../helpers/helpers");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const subscription_plan_model = require("../models/subcription.plan.model");
-
+const reported_story_model = require("../models/reported.users.models");
+const mystory_model = require("../models/mystory.model");
 const upload = multer({ storage: multer.memoryStorage() });
 /**
  *  Create/ Register User API
@@ -2200,54 +2201,48 @@ exports.report_user = [
   login_validator,
   async (req, res) => {
     try {
-      // Fetch the user to be reported
-      const user_to_report = await user_model.findOne({
-        _id: req.body.user_id,
-      }).select("full_name CANID gender reportedBy");
-
-      console.log("line 80", user_to_report);
-
-      // Check if the user exists
-      if (!user_to_report) {
-        return apiResponse.validationErrorWithData(res, "User not found");
+      //validation
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return apiResponse.validationErrorWithData(
+          res,
+          "Validation Error.",
+          errors.array()
+        );
       }
-
-      // Fetch the user who is reporting
-      const user_reporting = await user_model.findOne({
-        _id: req.user.user._id,
+      // fecth story of   to report
+      const mystory_found = await mystory_model.findOne({
+        _id: req.body.story_id,
       });
 
+     
       // Check if the user exists
-      if (!user_reporting) {
-        return apiResponse.validationErrorWithData(res, "User not found");
+      if (!mystory_found) {
+        return apiResponse.validationErrorWithData(res, " Story  not found");
       }
 
-      // Initialize reportedBy array if it doesn't exist
-      if (!user_to_report.reportedBy) {
-        user_to_report.reportedBy = [];
+      //now add the report of mystory found
+
+      const story_reported = new reported_story_model({
+        user_id: mystory_found.user_id,
+        story_id: req.body.story_id,
+        report_reason: req.body.report_reason,
+        reported_by: req.user.user._id,
+      });
+
+      const story_reported_saved = await story_reported.save();
+
+
+
+      if (!story_reported_saved ) {
+        return apiResponse.validationErrorWithData(res, "Story not reported");
       }
 
-      // Check if the user_id is already in the reportedBy array
-      const reportedIndex = user_to_report.reportedBy.findIndex(
-        (reportedUser) => reportedUser.user_id.toString() === req.user.user._id
+      return apiResponse.successResponseWithData(
+        res,
+        "User reported successfully",
+        story_reported_saved 
       );
-
-      if (reportedIndex >= 0) {
-        // If user_id is found in the reportedBy array, update the report reason
-        user_to_report.reportedBy[reportedIndex].report_reason = req.body.report_reason;
-      } else {
-        // If user_id is not found in the reportedBy array, add it
-        user_to_report.reportedBy.push({
-          user_id: req.user.user._id,
-          story_id: req.body.story_id,
-          report_reason: req.body.report_reason,
-        });
-      }
-      console.log("line 80", user_to_report);
-
-      await user_to_report.save();
-
-      return apiResponse.successResponseWithData(res, "User reported successfully",user_to_report);
     } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
@@ -2255,24 +2250,24 @@ exports.report_user = [
         err.message
       );
     }
-  }
+  },
 ];
 
 //Get reported users list by admin
 
 exports.get_reported_users_list_by_admin = [
   login_validator,
-  admin_validator,
+  // admin_validator,
   async (req, res) => {
     try {
       // Fetch the users list
-      const users_list = await user_model
-        .find({ "reportedBy.0": { $exists: true } })
-        .select(
-          "full_name phone_number CANID email user_profile profile_image date_of_joining status",
-          
-
-        );
+      const users_list = await reported_story_model
+        .find({  })
+        .populate("user_id", "full_name phone_number CANID email user_profile profile_image reported_at status")
+        // .select(
+        //   "full_name phone_number CANID email user_profile  report_reason profile_image date_of_joining status"
+        // );
+      console.log("line 80", users_list.length);
 
       // Check if the users list exists
       if (!users_list) {
@@ -2292,18 +2287,8 @@ exports.get_reported_users_list_by_admin = [
         err.message
       );
     }
-  }
+  },
 ];
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Subscribe  the subscription plan by user api
@@ -2366,5 +2351,3 @@ exports.subscribe_plan = [
     }
   },
 ];
-
-

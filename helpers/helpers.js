@@ -121,12 +121,47 @@ async function sendResetLink(emailAddress, resetLink) {
     }
 }
 
+//===================Send invoice to email using nodemailer function===================//
+
+function sendInvoiceEmail(email,invoice){
+  const emailTransporter = nodemailer.createTransport({
+    service: "gmail", // Replace with your email service,
+    auth: {
+      user: emailUser, //email username,
+      pass: emailPass, //email password,
+    },
+  });
+  
+  const emailOptions = {
+    from: emailUser,
+    to: email,
+    subject: 'Invoice',
+    text: `Dear User,\n\nPlease find the attached invoice.\n\nBest Regards,\nYour Website Team`,
+    attachments: [
+      {
+        filename: 'invoice.pdf',
+        content: invoice,
+        encoding: 'base64',
+      },
+    ],
+  };
+  
+  emailTransporter.sendMail(emailOptions, (err, info) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(`Email sent: ${info.response}`);
+    }
+  });
+}
+
+
+
 
 module.exports={
   sendOTP,
   generateOTP,
   sendResetLink,
-  generateResetToken
-
-
+  generateResetToken,
+  sendInvoiceEmail
 }
