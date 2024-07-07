@@ -103,6 +103,10 @@ const mystorySchema = new Schema(
       type: String,
       required: false,
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
 
     // story: {
     //     type: String,

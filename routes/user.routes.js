@@ -50,6 +50,8 @@ router.post("/reset-password",user_controllers.reset_password)
 //User Reports API
 router.post("/report-user",user_controllers.report_user)
 router.get("/get-reported-users-list",user_controllers.get_reported_users_list_by_admin)
+router.post("/block-story/:story_id",user_controllers.block_reported_story_by_admin)
+router.delete("/delete-story/:story_id",user_controllers.delete_reported_story_by_admin)
 
 
 
