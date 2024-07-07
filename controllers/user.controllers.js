@@ -2351,3 +2351,107 @@ exports.subscribe_plan = [
     }
   },
 ];
+
+/**
+ * Block the reported story by admin API
+ * in this api admin will able to block after inspection of story
+ */
+
+exports.block_reported_story_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the reported story
+      const story_found = await reported_story_model.findOne({
+        story_id: req.params.story_id,
+      });
+
+      // Check if the story exists
+
+      if (!story_found) {
+        return apiResponse.validationErrorWithData(res, "Story not found");
+      }
+   //now check story in mystory model
+      const mystory_found = await mystory_model.findOne({
+        _id: story_found.story_id,
+      });
+
+
+      // Block the story
+      mystory_found.isBlocked = true;
+      const story_blocked = await mystory_found.save();
+      story_found.status = "Blocked";
+      const story_reported = await story_found.save();
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Story blocked",
+      );
+    } catch (err) {
+      console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
+
+/**
+  * Delete the reported story by admin API
+  */
+
+exports.delete_reported_story_by_admin = [
+  login_validator,
+  admin_validator,
+  async (req, res) => {
+    try {
+      // Fetch the reported story
+      const story_found = await reported_story_model.findOne({
+        story_id: req.params.story_id,
+      });
+
+      // Check if the story exists
+      if (!story_found) {
+        return apiResponse.validationErrorWithData(res, "Story not found");
+      }
+
+      // Delete the story form the mystory model and reported_story model
+      const story_deleted = await mystory_model.findOneAndDelete({
+        _id: story_found.story_id,
+      });
+      await reported_story_model.findOneAndDelete({
+        story_id: req.params.story_id,
+      });
+
+     
+
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Story deleted",
+        //story_deleted
+      );
+    } catch (err) {
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  }
+];
+
+
+
+
+
+
+
+
+
+
+
+

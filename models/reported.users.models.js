@@ -8,6 +8,11 @@ const reportedUserSchema = new Schema({
         ref: "User",
         required: true,
     },
+    story_id: {
+        type: Schema.Types.ObjectId,
+        ref: "MyStory",
+        required: true,
+    },
     reported_by: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -20,7 +25,7 @@ const reportedUserSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["Pending", "Resolved"],
+        enum: ["Pending", "Blocked"],
         default: "Pending",
     },
     reported_at: {
