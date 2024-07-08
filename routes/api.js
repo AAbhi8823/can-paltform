@@ -38,7 +38,7 @@ app.use("/feedback",feedbackRoutes)
 app.use("/ticket",ticketRoutes)
 app.use("/poll",pollRoutes)
 
-app.use("/invoice",invoiceRoutes)
+//app.use("/invoice",invoiceRoutes)
 
 
 module.exports=app
