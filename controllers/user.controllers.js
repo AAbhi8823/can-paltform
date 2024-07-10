@@ -2215,7 +2215,6 @@ exports.report_user = [
         _id: req.body.story_id,
       });
 
-     
       // Check if the user exists
       if (!mystory_found) {
         return apiResponse.validationErrorWithData(res, " Story  not found");
@@ -2232,16 +2231,14 @@ exports.report_user = [
 
       const story_reported_saved = await story_reported.save();
 
-
-
-      if (!story_reported_saved ) {
+      if (!story_reported_saved) {
         return apiResponse.validationErrorWithData(res, "Story not reported");
       }
 
       return apiResponse.successResponseWithData(
         res,
         "User reported successfully",
-        story_reported_saved 
+        story_reported_saved
       );
     } catch (err) {
       return apiResponse.serverErrorResponse(
@@ -2262,11 +2259,14 @@ exports.get_reported_users_list_by_admin = [
     try {
       // Fetch the users list
       const users_list = await reported_story_model
-        .find({  })
-        .populate("user_id", "full_name phone_number CANID email user_profile profile_image reported_at status")
-        // .select(
-        //   "full_name phone_number CANID email user_profile  report_reason profile_image date_of_joining status"
-        // );
+        .find({})
+        .populate(
+          "user_id",
+          "full_name phone_number CANID email user_profile profile_image reported_at status"
+        );
+      // .select(
+      //   "full_name phone_number CANID email user_profile  report_reason profile_image date_of_joining status"
+      // );
       console.log("line 80", users_list.length);
 
       // Check if the users list exists
@@ -2281,6 +2281,47 @@ exports.get_reported_users_list_by_admin = [
       );
     } catch (err) {
       console.log("line 80", err);
+      return apiResponse.serverErrorResponse(
+        res,
+        "Server Error...!",
+        err.message
+      );
+    }
+  },
+];
+
+/**
+ * Get the reported story by admin API
+ * In this api admin will be able to get the reported story
+ * when admin will click api will return the reported story with the user_id and story_id details
+ */
+
+exports.get_reported_story_by_admin = [
+  login_validator,
+  async (req, res) => {
+    try {
+      // Fetch the reported story
+      const reported_story_found = await reported_story_model.findOne({
+        story_id: req.params.story_id,
+      });
+
+      // Check if the story exists
+      if (!reported_story_found) {
+        return apiResponse.validationErrorWithData(res, "Story not found");
+      }
+      //fetch the story from mystory model
+      const mystory_found = await mystory_model.findOne({
+        _id: reported_story_found.story_id,
+      }).populate("user_id", "full_name phone_number CANID   profile_image reported_at status");
+
+
+
+      return apiResponse.successResponseWithData(
+        res,
+        "Reported story",
+        mystory_found
+      );
+    } catch (err) {
       return apiResponse.serverErrorResponse(
         res,
         "Server Error...!",
@@ -2372,11 +2413,10 @@ exports.block_reported_story_by_admin = [
       if (!story_found) {
         return apiResponse.validationErrorWithData(res, "Story not found");
       }
-   //now check story in mystory model
+      //now check story in mystory model
       const mystory_found = await mystory_model.findOne({
         _id: story_found.story_id,
       });
-
 
       // Block the story
       mystory_found.isBlocked = true;
@@ -2384,10 +2424,7 @@ exports.block_reported_story_by_admin = [
       story_found.status = "Blocked";
       const story_reported = await story_found.save();
 
-      return apiResponse.successResponseWithData(
-        res,
-        "Story blocked",
-      );
+      return apiResponse.successResponseWithData(res, "Story blocked");
     } catch (err) {
       console.log("line 80", err);
       return apiResponse.serverErrorResponse(
@@ -2396,12 +2433,12 @@ exports.block_reported_story_by_admin = [
         err.message
       );
     }
-  }
+  },
 ];
 
 /**
-  * Delete the reported story by admin API
-  */
+ * Delete the reported story by admin API
+ */
 
 exports.delete_reported_story_by_admin = [
   login_validator,
@@ -2426,12 +2463,9 @@ exports.delete_reported_story_by_admin = [
         story_id: req.params.story_id,
       });
 
-     
-
-
       return apiResponse.successResponseWithData(
         res,
-        "Story deleted",
+        "Story deleted"
         //story_deleted
       );
     } catch (err) {
@@ -2441,17 +2475,5 @@ exports.delete_reported_story_by_admin = [
         err.message
       );
     }
-  }
+  },
 ];
-
-
-
-
-
-
-
-
-
-
-
-

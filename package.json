@@ -9,7 +9,7 @@
     "dev": "nodemon app.js"
   },
   "keywords": [],
-  "author": "abhishek",
+  "author": "@abhishek",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.1532.0",
@@ -37,6 +37,7 @@
     "nodemailer": "^6.9.13",
     "pdfkit": "^0.15.0",
     "qs": "^6.12.1",
+    "razorpay": "^2.9.4",
     "twilio": "^4.20.0",
     "zoomus": "^0.1.4"
   },
